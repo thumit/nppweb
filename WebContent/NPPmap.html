@@ -69,7 +69,7 @@
       </select>
     </div>
 
-    <div class="kpi-container">
+<div class="kpi-container">
       <div class="kpi-card">
         <div class="kpi-val" id="kpiLocalUse">0</div>
         <div class="kpi-lbl">Local Use</div>
@@ -84,6 +84,40 @@
         <div class="kpi-val inbound-val" id="kpiImportation">0</div>
         <div class="kpi-lbl">Importation</div>
         <div class="kpi-subdesc">Resources from other GACCs received by the home GACC</div>
+      </div>
+    </div>
+
+    <!-- NEW ADDITION: Resource Level Split Flow Stream -->
+    <div class="resource-flow-card" id="resourceFlowCard">
+      <div class="sankey-title-bar">
+        <span class="sankey-title">PREPAREDNESS LEVEL CAPACITY SPLIT</span>
+        <span class="sankey-badge" id="sankeyTotalBadge">TOTAL: 0</span>
+      </div>
+      <div class="sankey-stream-container">
+        <div class="sankey-node root-node">
+          <div class="node-label">STAFFING</div>
+          <div class="node-val" id="sankeyStaffingVal">0</div>
+        </div>
+        <div class="sankey-connectors">
+          <svg class="sankey-svg" width="100%" height="100%">
+            <path id="pathDrawdown" d="M 0,15 C 30,15 30,12 60,12" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.8"/>
+            <path id="pathOutsource" d="M 0,25 C 30,25 30,35 60,35" stroke="#facc15" stroke-width="3" fill="none" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="sankey-branches">
+          <div class="sankey-node branch-node drawdown-node">
+            <span class="node-lbl">DRAWDOWN</span>
+            <span class="node-num" id="sankeyDrawdownVal">0</span>
+          </div>
+          <div class="sankey-node branch-node outsource-node">
+            <span class="node-lbl">OUTSOURCE</span>
+            <span class="node-num" id="sankeyOutsourceVal">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="allocation-progress-bar">
+        <div class="bar-fill drawdown-fill" id="barDrawdownFill" style="width: 50%;"></div>
+        <div class="bar-fill outsource-fill" id="barOutsourceFill" style="width: 50%;"></div>
       </div>
     </div>
   </div>

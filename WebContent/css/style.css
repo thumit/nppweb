@@ -398,3 +398,127 @@ body {
   font-size: 11px;
   color: #94a3b8;
 }
+
+/* --- Resource Allocation Flow Stream Additions --- */
+.resource-flow-card {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sankey-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sankey-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.sankey-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.sankey-stream-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sankey-node {
+  text-align: center;
+}
+
+.root-node {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 60px;
+}
+
+.node-label {
+  font-size: 9px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.node-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sankey-connectors {
+  flex-grow: 1;
+  height: 45px;
+  margin: 0 4px;
+}
+
+.sankey-branches {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.branch-node {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 95px;
+}
+
+.drawdown-node {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.outsource-node {
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  color: #facc15;
+}
+
+.allocation-progress-bar {
+  display: flex;
+  height: 6px;
+  width: 100%;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.drawdown-fill {
+  background: #38bdf8;
+}
+
+.outsource-fill {
+  background: #facc15;
+}

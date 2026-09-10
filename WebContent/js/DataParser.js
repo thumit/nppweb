@@ -104,4 +104,41 @@ export class DataParser {
 
     return parsedData;
   }
+
+  static loadResourceLevelCSV(filePath, onComplete) {
+    fetch(filePath)
+      .then(res => res.text())
+      .then(csvText => {
+        const parsed = DataParser.parseResourceLevelCSV(csvText);
+        if (onComplete) onComplete(parsed);
+      })
+      .catch(err => console.warn('resourcelevel.csv not found, skipping.', err));
+  }
+
+  static parseResourceLevelCSV(csvText) {
+    const lines = csvText.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const records = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      const cols = line.split(',').map(c => c.trim());
+      if (cols.length < headers.length) continue;
+
+      records.push({
+        crewtype: cols[0],
+        region: cols[1].toUpperCase(),
+        gacc_pl: parseInt(cols[2], 10),
+        national_pl: parseInt(cols[3], 10),
+        drawndown: parseFloat(cols[4]) || 0,
+        outsource: parseFloat(cols[5]) || 0,
+        staffing: parseFloat(cols[6]) || 0
+      });
+    }
+    return records;
+  }
 }

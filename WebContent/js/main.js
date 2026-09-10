@@ -5,6 +5,7 @@ import { DataParser } from './DataParser.js';
 class App {
   constructor() {
     this.movementMatrix = [];
+    this.resourceLevels = [];
     this.map = new Map3D('canvas-container', 'labels-container');
     this.flowOverlay = null;
 
@@ -18,7 +19,7 @@ class App {
         this.map.gaccCentroids
       );
 
-      // Auto load CSV on launch
+      // Auto load primary CSV matrix on launch
       DataParser.loadDefaultCSVFile(
         'data/gacc_matrix.csv', 
         (data, fileName) => this.onDataLoaded(data, fileName),
@@ -26,6 +27,12 @@ class App {
           document.getElementById('fileStatusLabel').innerText = '⚠️ Load CSV File';
         }
       );
+
+      // Auto load preparedness capacity split data
+      DataParser.loadResourceLevelCSV('data/resourcelevel.csv', (resData) => {
+        this.resourceLevels = resData;
+        this.updateResourceFlowStream();
+      });
     });
 
     this.animate();
@@ -58,7 +65,6 @@ class App {
     if (data && data.length > 0) {
       this.movementMatrix = data;
       if (fileName) {
-        // Clear label showing current file and indicating it can be clicked again
         document.getElementById('fileStatusLabel').innerText = `🔄 Change CSV (Active: ${fileName})`;
       } else {
         document.getElementById('fileStatusLabel').innerText = `🔄 Change CSV File`;
@@ -86,7 +92,7 @@ class App {
   }
 
   initEventListeners() {
-    // Window click for picking GACCs
+    // Window click for picking GACCs in 3D scene
     window.addEventListener('pointerdown', (event) => {
       if (event.clientY < 52) return; // Ignore navbar clicks
       if (event.clientX > window.innerWidth - 330 && event.clientY < 390) return; // Ignore panel clicks
@@ -123,7 +129,7 @@ class App {
     document.getElementById('resSelect').addEventListener('change', () => this.updateFlows());
     document.getElementById('dirSelect').addEventListener('change', () => this.updateFlows());
 
-    // File input event
+    // Custom CSV file loader
     document.getElementById('fileInput').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -135,6 +141,38 @@ class App {
       };
       reader.readAsText(file);
     });
+  }
+
+  updateResourceFlowStream() {
+    const focusGACC = (document.getElementById('gaccSelect').value || '').trim().toUpperCase();
+    const rawRes = (document.getElementById('resSelect').value || '').trim().toLowerCase();
+
+    if (!this.resourceLevels || this.resourceLevels.length === 0 || !focusGACC) return;
+
+    // Match region and crew/resource type
+    const matches = this.resourceLevels.filter(r => 
+      r.region === focusGACC && 
+      (rawRes === '' || r.crewtype.toLowerCase().includes(rawRes) || rawRes.includes(r.crewtype.toLowerCase()))
+    );
+
+    const record = matches.length > 0 ? matches[0] : this.resourceLevels.find(r => r.region === focusGACC);
+
+    if (record) {
+      const staffing = record.staffing || (record.drawndown + record.outsource);
+      const drawndown = record.drawndown;
+      const outsource = record.outsource;
+
+      document.getElementById('sankeyTotalBadge').innerText = `TOTAL: ${staffing}`;
+      document.getElementById('sankeyStaffingVal').innerText = Math.round(staffing).toLocaleString();
+      document.getElementById('sankeyDrawdownVal').innerText = Math.round(drawndown).toLocaleString();
+      document.getElementById('sankeyOutsourceVal').innerText = Math.round(outsource).toLocaleString();
+
+      const drawPct = staffing > 0 ? (drawndown / staffing) * 100 : 50;
+      const outPct = staffing > 0 ? (outsource / staffing) * 100 : 50;
+
+      document.getElementById('barDrawdownFill').style.width = `${drawPct}%`;
+      document.getElementById('barOutsourceFill').style.width = `${outPct}%`;
+    }
   }
 
   updateFlows() {
@@ -174,6 +212,9 @@ class App {
     document.getElementById('kpiLocalUse').innerText = Math.round(localUse).toLocaleString();
     document.getElementById('kpiExportation').innerText = Math.round(exportation).toLocaleString();
     document.getElementById('kpiImportation').innerText = Math.round(importation).toLocaleString();
+
+    // Refresh capacity split UI
+    this.updateResourceFlowStream();
   }
 
   animate() {
