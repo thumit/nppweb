@@ -6,6 +6,8 @@ class App {
   constructor() {
     this.movementMatrix = [];
     this.resourceLevels = [];
+    this.selectedGaccPl = 5;
+    this.selectedNatPl = 5;
     this.map = new Map3D('canvas-container', 'labels-container');
     this.flowOverlay = null;
 
@@ -95,7 +97,7 @@ class App {
     // Window click for picking GACCs in 3D scene
     window.addEventListener('pointerdown', (event) => {
       if (event.clientY < 52) return; // Ignore navbar clicks
-      if (event.clientX > window.innerWidth - 330 && event.clientY < 390) return; // Ignore panel clicks
+      if (event.clientX > window.innerWidth - 330 && event.clientY < 550) return; // Ignore panel clicks
 
       this.map.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       this.map.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -129,6 +131,46 @@ class App {
     document.getElementById('resSelect').addEventListener('change', () => this.updateFlows());
     document.getElementById('dirSelect').addEventListener('change', () => this.updateFlows());
 
+    // Event listener for GACC Preparedness Level (1-5)
+    const gaccRow = document.getElementById('gaccPlRow');
+    if (gaccRow) {
+      gaccRow.addEventListener('click', (e) => {
+        const btn = e.target.closest('.pl-btn') || e.target.closest('button');
+        if (!btn) return;
+        
+        // Extract value from data-pl, data-level, or button inner text
+        const plVal = btn.dataset.pl || btn.dataset.level || btn.innerText.trim();
+        const parsedPl = parseInt(plVal, 10);
+
+        if (!isNaN(parsedPl)) {
+          gaccRow.querySelectorAll('.pl-btn, button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.selectedGaccPl = parsedPl;
+          this.updateResourceFlowStream();
+        }
+      });
+    }
+
+    // Event listener for National Preparedness Level (1-5)
+    const natRow = document.getElementById('natPlRow');
+    if (natRow) {
+      natRow.addEventListener('click', (e) => {
+        const btn = e.target.closest('.pl-btn') || e.target.closest('button');
+        if (!btn) return;
+
+        // Extract value from data-pl, data-level, or button inner text
+        const plVal = btn.dataset.pl || btn.dataset.level || btn.innerText.trim();
+        const parsedPl = parseInt(plVal, 10);
+
+        if (!isNaN(parsedPl)) {
+          natRow.querySelectorAll('.pl-btn, button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.selectedNatPl = parsedPl;
+          this.updateResourceFlowStream();
+        }
+      });
+    }
+
     // Custom CSV file loader
     document.getElementById('fileInput').addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -145,30 +187,59 @@ class App {
 
   updateResourceFlowStream() {
     const focusGACC = (document.getElementById('gaccSelect').value || '').trim().toUpperCase();
-    const rawRes = (document.getElementById('resSelect').value || '').trim().toLowerCase();
+    const selectedRes = (document.getElementById('resSelect').value || '').trim().toLowerCase();
 
     if (!this.resourceLevels || this.resourceLevels.length === 0 || !focusGACC) return;
 
-    // Match region and crew/resource type
-    const matches = this.resourceLevels.filter(r => 
-      r.region === focusGACC && 
-      (rawRes === '' || r.crewtype.toLowerCase().includes(rawRes) || rawRes.includes(r.crewtype.toLowerCase()))
-    );
+    // Filter by Region
+    const regionRows = this.resourceLevels.filter(r => {
+      const reg = String(r.region || r.gacc || '').trim().toUpperCase();
+      return reg === focusGACC;
+    });
 
-    const record = matches.length > 0 ? matches[0] : this.resourceLevels.find(r => r.region === focusGACC);
+    if (regionRows.length === 0) return;
 
-    if (record) {
-      const staffing = record.staffing || (record.drawndown + record.outsource);
-      const drawndown = record.drawndown;
-      const outsource = record.outsource;
+    // Find row matching selected GACC_PL and NAT_PL
+    let matchedRecord = regionRows.find(r => {
+      const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
+      const natPl = parseInt(r.national_pl || r.natpl || r.nat_pl, 10);
+
+      const matchesGacc = gaccPl === this.selectedGaccPl;
+      const matchesNat = natPl === this.selectedNatPl;
+
+      // Check resource match if crewtype exists
+      const crew = String(r.crewtype || r.resource || '').trim().toLowerCase();
+      let matchesCrew = true;
+      if (selectedRes && crew) {
+        const cleanSelected = selectedRes.replace(/[^a-z0-9]/g, '');
+        const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
+        matchesCrew = cleanSelected.includes(cleanCrew) || cleanCrew.includes(cleanSelected);
+      }
+
+      return matchesGacc && matchesNat && matchesCrew;
+    });
+
+    // Fallback: match strictly on region + PL levels (ignoring crew string mismatch)
+    if (!matchedRecord) {
+      matchedRecord = regionRows.find(r => {
+        const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
+        const natPl = parseInt(r.national_pl || r.natpl || r.nat_pl, 10);
+        return gaccPl === this.selectedGaccPl && natPl === this.selectedNatPl;
+      });
+    }
+
+    if (matchedRecord) {
+      const drawndown = Number(matchedRecord.drawndown || matchedRecord.drawdown || 0);
+      const outsource = Number(matchedRecord.outsource || matchedRecord.outsourced || 0);
+      const staffing = Number(matchedRecord.staffing || (drawndown + outsource));
 
       document.getElementById('sankeyTotalBadge').innerText = `TOTAL: ${staffing}`;
       document.getElementById('sankeyStaffingVal').innerText = Math.round(staffing).toLocaleString();
       document.getElementById('sankeyDrawdownVal').innerText = Math.round(drawndown).toLocaleString();
       document.getElementById('sankeyOutsourceVal').innerText = Math.round(outsource).toLocaleString();
 
-      const drawPct = staffing > 0 ? (drawndown / staffing) * 100 : 50;
-      const outPct = staffing > 0 ? (outsource / staffing) * 100 : 50;
+      const drawPct = staffing > 0 ? (drawndown / staffing) * 100 : 0;
+      const outPct = staffing > 0 ? (outsource / staffing) * 100 : 0;
 
       document.getElementById('barDrawdownFill').style.width = `${drawPct}%`;
       document.getElementById('barOutsourceFill').style.width = `${outPct}%`;

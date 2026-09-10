@@ -69,7 +69,7 @@
       </select>
     </div>
 
-<div class="kpi-container">
+    <div class="kpi-container">
       <div class="kpi-card">
         <div class="kpi-val" id="kpiLocalUse">0</div>
         <div class="kpi-lbl">Local Use</div>
@@ -87,7 +87,32 @@
       </div>
     </div>
 
-    <!-- NEW ADDITION: Resource Level Split Flow Stream -->
+    <!-- Preparedness Level Selectors (Row-based compact UI) -->
+    <div class="pl-selector-container">
+      <div class="pl-selector-group">
+        <div class="pl-label">GACC Preparedness Level</div>
+        <div class="pl-btn-row" id="gaccPlRow">
+          <button class="pl-btn" data-pl="1">1</button>
+          <button class="pl-btn" data-pl="2">2</button>
+          <button class="pl-btn" data-pl="3">3</button>
+          <button class="pl-btn" data-pl="4">4</button>
+          <button class="pl-btn active" data-pl="5">5</button>
+        </div>
+      </div>
+
+      <div class="pl-selector-group">
+        <div class="pl-label">National Preparedness Level</div>
+        <div class="pl-btn-row" id="natPlRow">
+          <button class="pl-btn" data-pl="1">1</button>
+          <button class="pl-btn" data-pl="2">2</button>
+          <button class="pl-btn" data-pl="3">3</button>
+          <button class="pl-btn" data-pl="4">4</button>
+          <button class="pl-btn active" data-pl="5">5</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resource Level Split Flow Stream -->
     <div class="resource-flow-card" id="resourceFlowCard">
       <div class="sankey-title-bar">
         <span class="sankey-title">PREPAREDNESS LEVEL CAPACITY SPLIT</span>

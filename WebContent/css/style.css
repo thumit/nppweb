@@ -35,11 +35,9 @@ body {
   font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  /* High-visibility gradient text effect */
   background: linear-gradient(90deg, #ffffff 0%, #38bdf8 60%, #00e5ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Glow Effect for high visibility */
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
 }
 
@@ -153,7 +151,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Completely hide the default native browser file input element */
 #fileInput {
   display: none !important;
 }
@@ -231,6 +228,61 @@ body {
   margin-top: 4px;
   line-height: 1.35;
   font-weight: 400;
+}
+
+/* --- Preparedness Level Selectors (Horizontal Button Rows) --- */
+.pl-selector-container {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pl-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pl-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pl-btn-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.pl-btn {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #94a3b8;
+  padding: 5px 0;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pl-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.pl-btn.active {
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
 }
 
 #instructions {
@@ -328,7 +380,6 @@ body {
   margin-bottom: 24px;
 }
 
-/* Grid Layout for Equal Team Cards */
 .team-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
