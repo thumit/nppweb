@@ -94,10 +94,19 @@ class App {
   }
 
   initEventListeners() {
+    // Stop pointer events from leaking through the side panel to the 3D scene
+    const panel = document.getElementById('gisPanel');
+    if (panel) {
+      panel.addEventListener('pointerdown', (e) => e.stopPropagation());
+      panel.addEventListener('click', (e) => e.stopPropagation());
+    }
+
     // Window click for picking GACCs in 3D scene
     window.addEventListener('pointerdown', (event) => {
-      if (event.clientY < 52) return; // Ignore navbar clicks
-      if (event.clientX > window.innerWidth - 330 && event.clientY < 550) return; // Ignore panel clicks
+      // Prevent raycasting if click originates anywhere inside top navbar or side panel
+      if (event.clientY < 52 || event.target.closest('#gisPanel') || event.target.closest('.top-navbar')) {
+        return;
+      }
 
       this.map.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       this.map.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -138,7 +147,6 @@ class App {
         const btn = e.target.closest('.pl-btn') || e.target.closest('button');
         if (!btn) return;
         
-        // Extract value from data-pl, data-level, or button inner text
         const plVal = btn.dataset.pl || btn.dataset.level || btn.innerText.trim();
         const parsedPl = parseInt(plVal, 10);
 
@@ -158,7 +166,6 @@ class App {
         const btn = e.target.closest('.pl-btn') || e.target.closest('button');
         if (!btn) return;
 
-        // Extract value from data-pl, data-level, or button inner text
         const plVal = btn.dataset.pl || btn.dataset.level || btn.innerText.trim();
         const parsedPl = parseInt(plVal, 10);
 
@@ -219,7 +226,7 @@ class App {
       return matchesGacc && matchesNat && matchesCrew;
     });
 
-    // Fallback: match strictly on region + PL levels (ignoring crew string mismatch)
+    // Fallback: match strictly on region + PL levels
     if (!matchedRecord) {
       matchedRecord = regionRows.find(r => {
         const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
