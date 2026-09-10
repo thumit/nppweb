@@ -103,7 +103,6 @@ class App {
 
     // Window click for picking GACCs in 3D scene
     window.addEventListener('pointerdown', (event) => {
-      // Prevent raycasting if click originates anywhere inside top navbar or side panel
       if (event.clientY < 52 || event.target.closest('#gisPanel') || event.target.closest('.top-navbar')) {
         return;
       }
@@ -193,6 +192,12 @@ class App {
   }
 
   updateResourceFlowStream() {
+    // Hide total badge element directly from DOM
+    const totalBadge = document.getElementById('sankeyTotalBadge');
+    if (totalBadge) {
+      totalBadge.style.display = 'none';
+    }
+
     const focusGACC = (document.getElementById('gaccSelect').value || '').trim().toUpperCase();
     const selectedRes = (document.getElementById('resSelect').value || '').trim().toLowerCase();
 
@@ -240,7 +245,6 @@ class App {
       const outsource = Number(matchedRecord.outsource || matchedRecord.outsourced || 0);
       const staffing = Number(matchedRecord.staffing || (drawndown + outsource));
 
-      document.getElementById('sankeyTotalBadge').innerText = `TOTAL: ${staffing}`;
       document.getElementById('sankeyStaffingVal').innerText = Math.round(staffing).toLocaleString();
       document.getElementById('sankeyDrawdownVal').innerText = Math.round(drawndown).toLocaleString();
       document.getElementById('sankeyOutsourceVal').innerText = Math.round(outsource).toLocaleString();
