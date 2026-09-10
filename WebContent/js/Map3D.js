@@ -31,18 +31,18 @@ export class Map3D {
     this.gaccCentroids = {};
     this.selectedGaccGroup = null;
 
-    this.GACC_CONFIG = {
-      "AICC": { name: "Alaska", color: 0x334155, emissive: 0x0f172a },
-      "NWCC": { name: "Northwest", color: 0x0f766e, emissive: 0x042f2e },
-      "ONCC": { name: "Northern California", color: 0x15803d, emissive: 0x052e16 },
-      "OSCC": { name: "Southern California", color: 0x4d7c0f, emissive: 0x1a2e05 },
-      "GBCC": { name: "Great Basin", color: 0xb45309, emissive: 0x451a03 },
-      "NRCC": { name: "Northern Rockies", color: 0x1d4ed8, emissive: 0x172554 },
-      "RMCC": { name: "Rocky Mountain", color: 0x6b21a8, emissive: 0x2e1065 },
-      "SWCC": { name: "Southwest", color: 0xbe123c, emissive: 0x4c0519 },
-      "SACC": { name: "Southern", color: 0x854d0e, emissive: 0x361a06 },
-      "EACC": { name: "Eastern", color: 0x475569, emissive: 0x0f172a }
-    };
+	this.GACC_CONFIG = {
+	  "AICC": { name: "Alaska",              color: 0x1e293b, emissive: 0x090d16 }, // Ice Slate / Deep Charcoal
+	  "NWCC": { name: "Northwest",           color: 0x0f5257, emissive: 0x031719 }, // Deep Emerald Teal
+	  "ONCC": { name: "Northern California", color: 0x1b4965, emissive: 0x081721 }, // Deep Ocean Blue
+	  "OSCC": { name: "Southern California", color: 0x2b593f, emissive: 0x0b1a11 }, // Muted Forest
+	  "GBCC": { name: "Great Basin",          color: 0x725114, emissive: 0x211704 }, // Polished Amber
+	  "NRCC": { name: "Northern Rockies",    color: 0x1d3557, emissive: 0x070e17 }, // Midnight Navy
+	  "RMCC": { name: "Rocky Mountain",      color: 0x4a2e35, emissive: 0x170b0e }, // Deep Mulberry / Wine
+	  "SWCC": { name: "Southwest",           color: 0x7a3328, emissive: 0x210c09 }, // Muted Terracotta
+	  "SACC": { name: "Southern",            color: 0x495057, emissive: 0x111315 }, // Metallic Slate
+	  "EACC": { name: "Eastern",             color: 0x2c3e50, emissive: 0x0a1118 }  // Steel Slate
+	};
 
     this.fipsToAbbrev = {
       "01": "AL", "02": "AK", "04": "AZ", "05": "AR", "06": "CA", "08": "CO", "09": "CT", "10": "DE",
@@ -58,22 +58,25 @@ export class Map3D {
     window.addEventListener('resize', () => this.onWindowResize());
   }
 
-  initLighting() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
-    this.scene.add(ambientLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    dirLight.position.set(150, 400, 200);
-    this.scene.add(dirLight);
-
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.4);
-    rimLight.position.set(-200, 200, -200);
-    this.scene.add(rimLight);
-
-    const gridHelper = new THREE.GridHelper(1600, 50, 0x1e293b, 0x0f172a);
-    gridHelper.position.y = -0.5;
-    this.scene.add(gridHelper);
-  }
+	initLighting() {
+	  // Lower ambient light to prevent surface washout
+	  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+	  this.scene.add(ambientLight);
+	
+	  // Softer directional light with focused angle
+	  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+	  dirLight.position.set(100, 300, 150);
+	  this.scene.add(dirLight);
+	
+	  // Subtle cyan rim lighting to give 3D edges depth
+	  const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.35);
+	  rimLight.position.set(-200, 150, -200);
+	  this.scene.add(rimLight);
+	
+	  const gridHelper = new THREE.GridHelper(1600, 50, 0x1e293b, 0x0f172a);
+	  gridHelper.position.y = -0.5;
+	  this.scene.add(gridHelper);
+	}
 
   loadMapData(onReadyCallback) {
     fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
