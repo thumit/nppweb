@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D GACC Map - Executive GIS Style (v04 Modular)</title>
+  <title>3D GACC Map - Executive GIS Style (v05 Modular)</title>
   
   <link rel="stylesheet" href="css/style.css">
 
@@ -15,17 +15,26 @@
 </head>
 <body>
 
+  <!-- Top Navigation Bar (Option A) -->
+  <header class="top-navbar">
+    <div class="nav-brand">NATIONAL PREPAREDNESS PLAN DEVELOPMENT (BETA)</div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" id="tabMap">Resource Mobility</button>
+      <button class="nav-tab" id="tabAbout">👥 About Us</button>
+    </nav>
+  </header>
+  
   <div id="canvas-container"></div>
   <div id="labels-container"></div>
 
-  <!-- Interactive Overlay Panel -->
-  <div class="gis-panel">
+  <!-- Interactive Overlay Panel (Map View) -->
+  <div class="gis-panel" id="gisPanel">
     <h3>Annual Resource Movement Projection</h3>
 
-    <div class="file-input-wrapper" onclick="document.getElementById('fileInput').click()">
-      <span class="file-input-btn" id="fileStatusLabel">📁 Load Other CSV File</span>
-      <input type="file" id="fileInput" accept=".csv" />
-    </div>
+	<div class="file-input-wrapper" onclick="document.getElementById('fileInput').click()">
+	  <span class="file-input-btn" id="fileStatusLabel">🔄 CHANGE CSV (ACTIVE: GACC_MATRIX.CSV)</span>
+	  <input type="file" id="fileInput" accept=".csv" style="display: none;" />
+	</div>
 
     <div class="form-group">
       <label>Focus GACC</label>
@@ -50,15 +59,15 @@
       </select>
     </div>
 
-	<div class="form-group">
-	  <label>Flow Direction</label>
-	  <select class="form-control" id="dirSelect">
-	    <option value="all">All Flows (Local, Export, Import)</option>
-	    <option value="local">Local Use Only</option>
-	    <option value="outbound">Exportation Only</option>
-	    <option value="inbound">Importation Only</option>
-	  </select>
-	</div>
+    <div class="form-group">
+      <label>Flow Direction</label>
+      <select class="form-control" id="dirSelect">
+        <option value="all">All Flows (Local, Export, Import)</option>
+        <option value="local">Local Use Only</option>
+        <option value="outbound">Exportation Only</option>
+        <option value="inbound">Importation Only</option>
+      </select>
+    </div>
 
     <div class="kpi-container">
       <div class="kpi-card">
@@ -75,6 +84,71 @@
         <div class="kpi-val inbound-val" id="kpiImportation">0</div>
         <div class="kpi-lbl">Importation</div>
         <div class="kpi-subdesc">Resources from other GACCs received by the home GACC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified About Us Modal Overlay -->
+  <div class="about-overlay" id="aboutOverlay">
+    <div class="about-container">
+      <div class="about-header">
+        <h2>About Us</h2>
+        <button class="about-close-btn" id="closeAboutBtn">&times;</button>
+      </div>
+      <p class="about-intro">
+        Our interdisciplinary team combines expertise in operations research, spatial modeling, and wildland fire management to support national-level decision-making.
+      </p>
+
+      <div class="team-grid">
+        <!-- Dung Nguyen -->
+        <div class="team-card">
+          <div class="team-card-header">
+            <a href="https://dzungcsu.wixsite.com/operations-research/about" target="_blank" rel="noopener noreferrer" class="team-name">Dung Nguyen</a>
+            <span class="team-badge badge-developer">Developer</span>
+          </div>
+          <div class="team-role">Research Scientist II</div>
+          <div class="team-affiliation">Colorado State University</div>
+        </div>
+
+        <!-- Erin Belval -->
+        <div class="team-card">
+          <div class="team-card-header">
+            <a href="https://research.fs.usda.gov/about/people/erin.belval" target="_blank" rel="noopener noreferrer" class="team-name">Erin Belval</a>
+            <span class="team-badge">Research Collaborator</span>
+          </div>
+          <div class="team-role">Research Forester</div>
+          <div class="team-affiliation">USDA Forest Service</div>
+        </div>
+
+        <!-- Yu Wei -->
+        <div class="team-card">
+          <div class="team-card-header">
+            <a href="https://people.warnercnr.colostate.edu/?yu.wei" target="_blank" rel="noopener noreferrer" class="team-name">Yu Wei</a>
+            <span class="team-badge">Research Collaborator</span>
+          </div>
+          <div class="team-role">Professor</div>
+          <div class="team-affiliation">Colorado State University</div>
+        </div>
+
+        <!-- Emircan Topal -->
+        <div class="team-card">
+          <div class="team-card-header">
+            <a href="https://warnercnr.colostate.edu/person/?user=0p7Ms1BED4PGIfBVKZyitg%3D%3D" target="_blank" rel="noopener noreferrer" class="team-name">Emircan Topal</a>
+            <span class="team-badge">Research Collaborator</span>
+          </div>
+          <div class="team-role">Graduate Student</div>
+          <div class="team-affiliation">Colorado State University</div>
+        </div>
+
+        <!-- Hans Ohme -->
+        <div class="team-card">
+          <div class="team-card-header">
+            <a href="https://www.nwcg.gov/member-view/forest-service/ohme/hans" target="_blank" rel="noopener noreferrer" class="team-name">Hans Ohme</a>
+            <span class="team-badge">External Collaborator</span>
+          </div>
+          <div class="team-role">Branch Chief Operations</div>
+          <div class="team-affiliation">Forest Service Fire and Aviation Management</div>
+        </div>
       </div>
     </div>
   </div>

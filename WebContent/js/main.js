@@ -9,6 +9,8 @@ class App {
     this.flowOverlay = null;
 
     this.initEventListeners();
+    this.initNavigation();
+
     this.map.loadMapData(() => {
       this.flowOverlay = new EmbeddedGACCFlowOverlay(
         this.map.scene, 
@@ -29,20 +31,43 @@ class App {
     this.animate();
   }
 
+  initNavigation() {
+    const tabMap = document.getElementById('tabMap');
+    const tabAbout = document.getElementById('tabAbout');
+    const aboutOverlay = document.getElementById('aboutOverlay');
+    const closeAboutBtn = document.getElementById('closeAboutBtn');
+
+    const showMap = () => {
+      tabMap.classList.add('active');
+      tabAbout.classList.remove('active');
+      aboutOverlay.classList.remove('active');
+    };
+
+    const showAbout = () => {
+      tabAbout.classList.add('active');
+      tabMap.classList.remove('active');
+      aboutOverlay.classList.add('active');
+    };
+
+    tabMap.addEventListener('click', showMap);
+    tabAbout.addEventListener('click', showAbout);
+    closeAboutBtn.addEventListener('click', showMap);
+  }
+
   onDataLoaded(data, fileName) {
     if (data && data.length > 0) {
       this.movementMatrix = data;
       if (fileName) {
-        document.getElementById('fileStatusLabel').innerText = `✓ Loaded: ${fileName}`;
+        // Clear label showing current file and indicating it can be clicked again
+        document.getElementById('fileStatusLabel').innerText = `🔄 Change CSV (Active: ${fileName})`;
+      } else {
+        document.getElementById('fileStatusLabel').innerText = `🔄 Change CSV File`;
       }
-      
       this.populateResourceDropdown();
-      
       const resSelect = document.getElementById('resSelect');
       if (resSelect.options.length > 0) {
         resSelect.selectedIndex = 0;
       }
-      
       this.updateFlows();
     }
   }
@@ -63,7 +88,8 @@ class App {
   initEventListeners() {
     // Window click for picking GACCs
     window.addEventListener('pointerdown', (event) => {
-      if (event.clientX > window.innerWidth - 330 && event.clientY < 340) return;
+      if (event.clientY < 52) return; // Ignore navbar clicks
+      if (event.clientX > window.innerWidth - 330 && event.clientY < 390) return; // Ignore panel clicks
 
       this.map.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       this.map.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -111,7 +137,7 @@ class App {
     });
   }
 
-updateFlows() {
+  updateFlows() {
     const rawRes = document.getElementById('resSelect').value || '';
     const rawFocus = document.getElementById('gaccSelect').value || '';
     const direction = document.getElementById('dirSelect').value;
