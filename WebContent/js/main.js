@@ -11,6 +11,15 @@ class App {
     this.map = new Map3D('canvas-container', 'labels-container');
     this.flowOverlay = null;
 
+    // Available scenario plan folders inside WebContent/data/
+    this.availablePlans = [
+      { name: 'Plan A', enabled: true },
+      { name: 'Plan B', enabled: false },
+      { name: 'Plan C', enabled: false },
+      { name: 'Plan D', enabled: false }
+    ];
+    this.currentPlan = 'Plan A';
+
     this.initEventListeners();
     this.initNavigation();
 
@@ -21,20 +30,9 @@ class App {
         this.map.gaccCentroids
       );
 
-      // Auto load primary CSV matrix on launch
-      DataParser.loadDefaultCSVFile(
-        'data/gacc_matrix.csv', 
-        (data, fileName) => this.onDataLoaded(data, fileName),
-        (err) => {
-          document.getElementById('fileStatusLabel').innerText = '⚠️ Load CSV File';
-        }
-      );
-
-      // Auto load preparedness capacity split data
-      DataParser.loadResourceLevelCSV('data/resourcelevel.csv', (resData) => {
-        this.resourceLevels = resData;
-        this.updateResourceFlowStream();
-      });
+      // Populate scenario plan options and load default plan
+      this.populatePlanDropdown();
+      this.loadScenarioPlan(this.currentPlan);
     });
 
     this.animate();
@@ -63,14 +61,50 @@ class App {
     closeAboutBtn.addEventListener('click', showMap);
   }
 
-  onDataLoaded(data, fileName) {
+  populatePlanDropdown() {
+    const planSelect = document.getElementById('planSelect');
+    if (!planSelect) return;
+
+    planSelect.innerHTML = '';
+    this.availablePlans.forEach(planObj => {
+      const option = document.createElement('option');
+      option.value = planObj.name;
+      option.innerText = planObj.enabled ? planObj.name : `${planObj.name} (No Data)`;
+      option.disabled = !planObj.enabled;
+      
+      if (planObj.name === this.currentPlan) {
+        option.selected = true;
+      }
+      planSelect.appendChild(option);
+    });
+  }
+
+  loadScenarioPlan(planFolder) {
+    this.currentPlan = planFolder;
+    const folderPath = `data/${planFolder}`;
+
+    // Load primary GACC movement matrix CSV
+    DataParser.loadDefaultCSVFile(
+      `${folderPath}/gacc_matrix.csv`, 
+      (data) => this.onDataLoaded(data),
+      (err) => {
+        console.error(`Failed to load matrix for ${planFolder}`, err);
+      }
+    );
+
+    // Load preparedness resource level CSV
+    DataParser.loadResourceLevelCSV(
+      `${folderPath}/resourcelevel.csv`, 
+      (resData) => {
+        this.resourceLevels = resData;
+        this.updateResourceFlowStream();
+      }
+    );
+  }
+
+  onDataLoaded(data) {
     if (data && data.length > 0) {
       this.movementMatrix = data;
-      if (fileName) {
-        document.getElementById('fileStatusLabel').innerText = `🔄 Change CSV (Active: ${fileName})`;
-      } else {
-        document.getElementById('fileStatusLabel').innerText = `🔄 Change CSV File`;
-      }
       this.populateResourceDropdown();
       const resSelect = document.getElementById('resSelect');
       if (resSelect.options.length > 0) {
@@ -125,6 +159,14 @@ class App {
       }
     });
 
+    // Plan / Scenario dropdown selector listener
+    const planSelect = document.getElementById('planSelect');
+    if (planSelect) {
+      planSelect.addEventListener('change', (e) => {
+        this.loadScenarioPlan(e.target.value);
+      });
+    }
+
     // Control panel events
     document.getElementById('gaccSelect').addEventListener('change', () => {
       const code = document.getElementById('gaccSelect').value;
@@ -176,23 +218,9 @@ class App {
         }
       });
     }
-
-    // Custom CSV file loader
-    document.getElementById('fileInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const parsed = DataParser.parseCSVText(evt.target.result);
-        this.onDataLoaded(parsed, file.name);
-      };
-      reader.readAsText(file);
-    });
   }
 
   updateResourceFlowStream() {
-    // Hide total badge element directly from DOM
     const totalBadge = document.getElementById('sankeyTotalBadge');
     if (totalBadge) {
       totalBadge.style.display = 'none';

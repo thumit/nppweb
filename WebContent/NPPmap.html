@@ -31,13 +31,15 @@
   <div class="gis-panel" id="gisPanel">
     <h3>Annual Resource Movement Projection</h3>
 
-	<div class="file-input-wrapper" onclick="document.getElementById('fileInput').click()">
-	  <span class="file-input-btn" id="fileStatusLabel">🔄 CHANGE CSV (ACTIVE: GACC_MATRIX.CSV)</span>
-	  <input type="file" id="fileInput" accept=".csv" style="display: none;" />
-	</div>
+    <div class="form-group">
+      <label for="planSelect">Scenario</label>
+      <select class="form-control" id="planSelect">
+        <!-- Dynamic Options populated by main.js -->
+      </select>
+    </div>
 
     <div class="form-group">
-      <label>Focus GACC</label>
+      <label>Geographic Area Coordination Center (GACC)</label>
       <select class="form-control" id="gaccSelect">
         <option value="NWCC">NWCC</option>
         <option value="OSCC">OSCC</option>
@@ -60,7 +62,7 @@
     </div>
 
     <div class="form-group">
-      <label>Flow Direction</label>
+      <label>Daily Count Of Resource Usage</label>
       <select class="form-control" id="dirSelect">
         <option value="all">All Flows (Local, Export, Import)</option>
         <option value="local">Local Use Only</option>
@@ -115,7 +117,7 @@
     <!-- Resource Level Split Flow Stream -->
     <div class="resource-flow-card" id="resourceFlowCard">
       <div class="sankey-title-bar">
-        <span class="sankey-title">PREPAREDNESS LEVEL CAPACITY SPLIT</span>
+        <span class="sankey-title">STAFFING LEVEL BY PREPAREDNESS LEVEL</span>
         <span class="sankey-badge" id="sankeyTotalBadge">TOTAL: 0</span>
       </div>
       <div class="sankey-stream-container">
