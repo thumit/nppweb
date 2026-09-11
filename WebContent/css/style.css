@@ -14,12 +14,12 @@ body {
 
 /* --- Top Navigation Bar --- */
 .top-navbar {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 52px;
-  background: rgba(15, 23, 42, 0.90);
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
@@ -27,7 +27,7 @@ body {
   justify-content: space-between;
   padding: 0 24px;
   box-sizing: border-box;
-  z-index: 200;
+  z-index: 2000;
 }
 
 .nav-brand {
@@ -39,10 +39,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-}
-
-.brand-icon {
-  font-size: 18px;
 }
 
 .nav-tabs {
@@ -73,7 +69,7 @@ body {
   border-color: rgba(56, 189, 248, 0.4);
 }
 
-/* --- GACC Map Labels --- */
+/* --- Map Labels --- */
 .gacc-label {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -100,35 +96,99 @@ body {
   z-index: 10;
 }
 
-/* --- GIS Control Panel --- */
+/* --- Top-Right GIS Panel --- */
 .gis-panel {
-  position: absolute;
-  top: 68px;
-  right: 20px;
-  z-index: 100;
-  width: 330px;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: fixed !important;
+  top: 52px !important; /* Pinned underneath top navbar */
+  right: 20px !important;
+  z-index: 1000 !important;
+  width: 380px;
+  max-width: 90vw;
+  max-height: calc(100vh - 72px);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: 8px;
-  padding: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.gis-panel h3 {
-  margin: 0 0 12px 0;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  padding-bottom: 6px;
-  color: #38bdf8;
+/* Header Bar at Top of Panel */
+.panel-toggle-btn,
+.gis-panel-header,
+.panel-header {
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #38bdf8 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 16px !important;
+  cursor: pointer !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.panel-toggle-btn:hover {
+  background: rgba(51, 65, 85, 1) !important;
+}
+
+.panel-header-title,
+.panel-title {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px !important;
+  text-transform: uppercase !important;
+  color: #38bdf8 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+.toggle-icon,
+#panelToggleIcon {
+  font-size: 12px !important;
+  color: #38bdf8 !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+}
+
+/* Scrollable Inner Panel Content */
+.panel-content,
+.gis-panel-body,
+.panel-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex-grow: 1;
+  transition: opacity 0.2s ease;
+  opacity: 1;
+}
+
+/* --- Collapsed State Fix --- */
+.gis-panel.collapsed {
+  max-height: 44px !important;
+}
+
+/* Hide ONLY body content when collapsed, leaving top header fully visible */
+.gis-panel.collapsed .panel-content,
+.gis-panel.collapsed .gis-panel-body,
+.gis-panel.collapsed .panel-body,
+.gis-panel.collapsed > *:nth-child(n+2) {
+  display: none !important;
 }
 
 .form-group {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .form-group label {
@@ -151,43 +211,13 @@ body {
   box-sizing: border-box;
 }
 
-#fileInput {
-  display: none !important;
-}
-
-.file-input-wrapper {
-  background: rgba(0, 229, 255, 0.08);
-  border: 1px dashed rgba(0, 229, 255, 0.4);
-  padding: 8px 10px;
-  border-radius: 4px;
-  text-align: center;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
-}
-
-.file-input-wrapper:hover {
-  background: rgba(0, 229, 255, 0.18);
-  border-color: #00e5ff;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
-}
-
-.file-input-btn {
-  font-size: 11px;
-  color: #00e5ff;
-  text-transform: uppercase;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.3px;
-}
-
-/* --- KPI Dashboard Cards --- */
+/* --- KPI Cards --- */
 .kpi-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -219,25 +249,24 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   margin-top: 3px;
-  letter-spacing: 0.2px;
 }
 
 .kpi-subdesc {
-  font-size: 10.5px;
+  font-size: 10px;
   color: #cbd5e1;
   margin-top: 4px;
   line-height: 1.35;
   font-weight: 400;
 }
 
-/* --- Preparedness Level Selectors (Horizontal Button Rows) --- */
+/* --- Preparedness Level Selectors --- */
 .pl-selector-container {
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .pl-selector-group {
@@ -251,7 +280,6 @@ body {
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 .pl-btn-row {
@@ -264,7 +292,7 @@ body {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #94a3b8;
-  padding: 5px 0;
+  padding: 6px 0;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
@@ -295,6 +323,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 12px;
   color: #64748b;
+  z-index: 50;
 }
 
 #labels-container {
@@ -307,7 +336,7 @@ body {
   overflow: hidden;
 }
 
-/* --- Unified About Us Modal Overlay --- */
+/* --- About Overlay --- */
 .about-overlay {
   position: absolute;
   top: 52px;
@@ -316,7 +345,7 @@ body {
   height: calc(100vh - 52px);
   background: rgba(5, 8, 17, 0.85);
   backdrop-filter: blur(12px);
-  z-index: 150;
+  z-index: 1500;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -356,7 +385,6 @@ body {
   font-size: 20px;
   color: #38bdf8;
   font-weight: 700;
-  letter-spacing: 0.5px;
 }
 
 .about-close-btn {
@@ -366,7 +394,6 @@ body {
   font-size: 24px;
   cursor: pointer;
   line-height: 1;
-  transition: color 0.2s;
 }
 
 .about-close-btn:hover {
@@ -391,12 +418,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 14px 16px;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.team-card:hover {
-  border-color: rgba(56, 189, 248, 0.4);
-  transform: translateY(-2px);
 }
 
 .team-card-header {
@@ -412,12 +433,6 @@ body {
   font-weight: 700;
   color: #38bdf8;
   text-decoration: none;
-  transition: color 0.2s ease, text-decoration 0.2s ease;
-}
-
-.team-name:hover {
-  color: #7dd3fc;
-  text-decoration: underline;
 }
 
 .team-badge {
@@ -450,10 +465,10 @@ body {
   color: #94a3b8;
 }
 
-/* --- Resource Allocation Flow Stream Additions --- */
+/* --- Resource Flow Stream --- */
 .resource-flow-card {
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -468,7 +483,6 @@ body {
   font-size: 10px;
   font-weight: 700;
   color: #94a3b8;
-  letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 

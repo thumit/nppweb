@@ -15,7 +15,7 @@
 </head>
 <body>
 
-  <!-- Top Navigation Bar (Option A) -->
+  <!-- Top Navigation Bar -->
   <header class="top-navbar">
     <div class="nav-brand">NATIONAL PREPAREDNESS PLAN DEVELOPMENT (BETA)</div>
     <nav class="nav-tabs">
@@ -27,133 +27,140 @@
   <div id="canvas-container"></div>
   <div id="labels-container"></div>
 
-  <!-- Interactive Overlay Panel (Map View) -->
+  <!-- Interactive Overlay Panel - Bottom Right Docked Drawer -->
   <div class="gis-panel" id="gisPanel">
-    <h3>Annual Plan Projection</h3>
+    <!-- Header Drawer Toggle Bar -->
+    <button id="panelToggleBtn" class="panel-toggle-btn" aria-label="Toggle Panel">
+      <span class="panel-header-title">ANNUAL PLAN PROJECTION</span>
+      <span id="panelToggleIcon" class="toggle-icon">▼</span>
+    </button>
 
-    <div class="form-group">
-      <label for="planSelect">Scenario</label>
-      <select class="form-control" id="planSelect">
-        <!-- Dynamic Options populated by main.js -->
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Geographic Area Coordination Center (GACC)</label>
-      <select class="form-control" id="gaccSelect">
-        <option value="NWCC">NWCC</option>
-        <option value="OSCC">OSCC</option>
-        <option value="ONCC">ONCC</option>
-        <option value="NRCC">NRCC</option>
-        <option value="GBCC">GBCC</option>
-        <option value="SWCC">SWCC</option>
-        <option value="RMCC">RMCC</option>
-        <option value="AICC">AICC</option>
-        <option value="EACC">EACC</option>
-        <option value="SACC">SACC</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Resource Type</label>
-      <select class="form-control" id="resSelect">
-        <!-- Dynamic Options -->
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Resource Usage (Days Per Year)</label>
-      <select class="form-control" id="dirSelect">
-        <option value="all">All Flows (Local, Export, Import)</option>
-        <option value="local">Local Use Only</option>
-        <option value="outbound">Exportation Only</option>
-        <option value="inbound">Importation Only</option>
-      </select>
-    </div>
-
-    <div class="kpi-container">
-      <div class="kpi-card">
-        <div class="kpi-val" id="kpiLocalUse">0</div>
-        <div class="kpi-lbl">Local Use</div>
-        <div class="kpi-subdesc">Home resources used in the home GACC</div>
+    <!-- Scrollable Panel Content -->
+    <div class="panel-content">
+      <div class="form-group">
+        <label for="planSelect">Scenario</label>
+        <select class="form-control" id="planSelect">
+          <!-- Populated by JS -->
+        </select>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-val outbound-val" id="kpiExportation">0</div>
-        <div class="kpi-lbl">Exportation</div>
-        <div class="kpi-subdesc">Home resources sent to other GACCs</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-val inbound-val" id="kpiImportation">0</div>
-        <div class="kpi-lbl">Importation</div>
-        <div class="kpi-subdesc">Resources from other GACCs received by the home GACC</div>
-      </div>
-    </div>
 
-    <!-- Preparedness Level Selectors (Row-based compact UI) -->
-    <div class="pl-selector-container">
-      <div class="pl-selector-group">
-        <div class="pl-label">GACC Preparedness Level</div>
-        <div class="pl-btn-row" id="gaccPlRow">
-          <button class="pl-btn" data-pl="1">1</button>
-          <button class="pl-btn" data-pl="2">2</button>
-          <button class="pl-btn" data-pl="3">3</button>
-          <button class="pl-btn" data-pl="4">4</button>
-          <button class="pl-btn active" data-pl="5">5</button>
+      <div class="form-group">
+        <label>Geographic Area Coordination Center (GACC)</label>
+        <select class="form-control" id="gaccSelect">
+          <option value="NWCC">NWCC</option>
+          <option value="OSCC">OSCC</option>
+          <option value="ONCC">ONCC</option>
+          <option value="NRCC">NRCC</option>
+          <option value="GBCC">GBCC</option>
+          <option value="SWCC">SWCC</option>
+          <option value="RMCC">RMCC</option>
+          <option value="AICC">AICC</option>
+          <option value="EACC">EACC</option>
+          <option value="SACC">SACC</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Resource Type</label>
+        <select class="form-control" id="resSelect">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Resource Usage (Days Per Year)</label>
+        <select class="form-control" id="dirSelect">
+          <option value="all">All Flows (Local, Export, Import)</option>
+          <option value="local">Local Use Only</option>
+          <option value="outbound">Exportation Only</option>
+          <option value="inbound">Importation Only</option>
+        </select>
+      </div>
+
+      <div class="kpi-container">
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiLocalUse">0</div>
+          <div class="kpi-lbl">Local Use</div>
+          <div class="kpi-subdesc">Home resources used in the home GACC</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val outbound-val" id="kpiExportation">0</div>
+          <div class="kpi-lbl">Exportation</div>
+          <div class="kpi-subdesc">Home resources sent to other GACCs</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val inbound-val" id="kpiImportation">0</div>
+          <div class="kpi-lbl">Importation</div>
+          <div class="kpi-subdesc">Resources from other GACCs received by the home GACC</div>
         </div>
       </div>
 
-      <div class="pl-selector-group">
-        <div class="pl-label">National Preparedness Level</div>
-        <div class="pl-btn-row" id="natPlRow">
-          <button class="pl-btn" data-pl="1">1</button>
-          <button class="pl-btn" data-pl="2">2</button>
-          <button class="pl-btn" data-pl="3">3</button>
-          <button class="pl-btn" data-pl="4">4</button>
-          <button class="pl-btn active" data-pl="5">5</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Resource Level Split Flow Stream -->
-    <div class="resource-flow-card" id="resourceFlowCard">
-      <div class="sankey-title-bar">
-        <span class="sankey-title">RESOURCE SHARING BY PREPAREDNESS LEVEL</span>
-        <span class="sankey-badge" id="sankeyTotalBadge">TOTAL: 0</span>
-      </div>
-      <div class="sankey-stream-container">
-		<div class="sankey-node root-node">
-          <div class="node-label">STAFFING LEVEL</div>
-          <div class="node-val" id="sankeyStaffingVal">0</div>
-          <div class="workload-container" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px;">
-            <div class="node-label" style="font-size: 0.65rem; color: #94a3b8;">WORKLOAD</div>
-            <div class="workload-val" id="workloadVal" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8;">0 <span style="font-size: 0.65rem; font-weight: normal; color: #94a3b8;">days/yr</span></div>
+      <!-- Preparedness Level Selectors -->
+      <div class="pl-selector-container">
+        <div class="pl-selector-group">
+          <div class="pl-label">GACC Preparedness Level</div>
+          <div class="pl-btn-row" id="gaccPlRow">
+            <button class="pl-btn" data-pl="1">1</button>
+            <button class="pl-btn" data-pl="2">2</button>
+            <button class="pl-btn" data-pl="3">3</button>
+            <button class="pl-btn" data-pl="4">4</button>
+            <button class="pl-btn active" data-pl="5">5</button>
           </div>
         </div>
-        <div class="sankey-connectors">
-          <svg class="sankey-svg" width="100%" height="100%">
-            <path id="pathDrawdown" d="M 0,15 C 30,15 30,12 60,12" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.8"/>
-            <path id="pathOutsource" d="M 0,25 C 30,25 30,35 60,35" stroke="#facc15" stroke-width="3" fill="none" opacity="0.8"/>
-          </svg>
-        </div>
-        <div class="sankey-branches">
-          <div class="sankey-node branch-node drawdown-node">
-            <span class="node-lbl">DRAWDOWN</span>
-            <span class="node-num" id="sankeyDrawdownVal">0</span>
-          </div>
-          <div class="sankey-node branch-node outsource-node">
-            <span class="node-lbl">OUTSOURCE</span>
-            <span class="node-num" id="sankeyOutsourceVal">0</span>
+
+        <div class="pl-selector-group">
+          <div class="pl-label">National Preparedness Level</div>
+          <div class="pl-btn-row" id="natPlRow">
+            <button class="pl-btn" data-pl="1">1</button>
+            <button class="pl-btn" data-pl="2">2</button>
+            <button class="pl-btn" data-pl="3">3</button>
+            <button class="pl-btn" data-pl="4">4</button>
+            <button class="pl-btn active" data-pl="5">5</button>
           </div>
         </div>
       </div>
-      <div class="allocation-progress-bar">
-        <div class="bar-fill drawdown-fill" id="barDrawdownFill" style="width: 50%;"></div>
-        <div class="bar-fill outsource-fill" id="barOutsourceFill" style="width: 50%;"></div>
+
+      <!-- Resource Level Split Flow Stream -->
+      <div class="resource-flow-card" id="resourceFlowCard">
+        <div class="sankey-title-bar">
+          <span class="sankey-title">RESOURCE SHARING BY PREPAREDNESS LEVEL</span>
+          <span class="sankey-badge" id="sankeyTotalBadge">TOTAL: 0</span>
+        </div>
+        <div class="sankey-stream-container">
+          <div class="sankey-node root-node">
+            <div class="node-label">STAFFING LEVEL</div>
+            <div class="node-val" id="sankeyStaffingVal">0</div>
+            <div class="workload-container" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px;">
+              <div class="node-label" style="font-size: 0.65rem; color: #94a3b8;">WORKLOAD</div>
+              <div class="workload-val" id="workloadVal" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8;">0 <span style="font-size: 0.65rem; font-weight: normal; color: #94a3b8;">days/yr</span></div>
+            </div>
+          </div>
+          <div class="sankey-connectors">
+            <svg class="sankey-svg" width="100%" height="100%">
+              <path id="pathDrawdown" d="M 0,15 C 30,15 30,12 60,12" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.8"/>
+              <path id="pathOutsource" d="M 0,25 C 30,25 30,35 60,35" stroke="#facc15" stroke-width="3" fill="none" opacity="0.8"/>
+            </svg>
+          </div>
+          <div class="sankey-branches">
+            <div class="sankey-node branch-node drawdown-node">
+              <span class="node-lbl">DRAWDOWN</span>
+              <span class="node-num" id="sankeyDrawdownVal">0</span>
+            </div>
+            <div class="sankey-node branch-node outsource-node">
+              <span class="node-lbl">OUTSOURCE</span>
+              <span class="node-num" id="sankeyOutsourceVal">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="allocation-progress-bar">
+          <div class="bar-fill drawdown-fill" id="barDrawdownFill" style="width: 50%;"></div>
+          <div class="bar-fill outsource-fill" id="barOutsourceFill" style="width: 50%;"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Unified About Us Modal Overlay -->
+  <!-- About Us Overlay -->
   <div class="about-overlay" id="aboutOverlay">
     <div class="about-container">
       <div class="about-header">
@@ -165,7 +172,6 @@
       </p>
 
       <div class="team-grid">
-        <!-- Dung Nguyen -->
         <div class="team-card">
           <div class="team-card-header">
             <a href="https://dzungcsu.wixsite.com/operations-research/about" target="_blank" rel="noopener noreferrer" class="team-name">Dung Nguyen</a>
@@ -175,7 +181,6 @@
           <div class="team-affiliation">Colorado State University</div>
         </div>
 
-        <!-- Erin Belval -->
         <div class="team-card">
           <div class="team-card-header">
             <a href="https://research.fs.usda.gov/about/people/erin.belval" target="_blank" rel="noopener noreferrer" class="team-name">Erin Belval</a>
@@ -185,7 +190,6 @@
           <div class="team-affiliation">USDA Forest Service</div>
         </div>
 
-        <!-- Yu Wei -->
         <div class="team-card">
           <div class="team-card-header">
             <a href="https://people.warnercnr.colostate.edu/?yu.wei" target="_blank" rel="noopener noreferrer" class="team-name">Yu Wei</a>
@@ -195,7 +199,6 @@
           <div class="team-affiliation">Colorado State University</div>
         </div>
 
-        <!-- Emircan Topal -->
         <div class="team-card">
           <div class="team-card-header">
             <a href="https://warnercnr.colostate.edu/person/?user=0p7Ms1BED4PGIfBVKZyitg%3D%3D" target="_blank" rel="noopener noreferrer" class="team-name">Emircan Topal</a>
@@ -205,7 +208,6 @@
           <div class="team-affiliation">Colorado State University</div>
         </div>
 
-        <!-- Hans Ohme -->
         <div class="team-card">
           <div class="team-card-header">
             <a href="https://www.nwcg.gov/member-view/forest-service/ohme/hans" target="_blank" rel="noopener noreferrer" class="team-name">Hans Ohme</a>
@@ -222,7 +224,6 @@
     Rotate: Left Drag | Pan: Right Drag | Zoom: Scroll
   </div>
 
-  <!-- Main ES6 Application Script -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
