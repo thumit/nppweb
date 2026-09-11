@@ -8,6 +8,12 @@ class App {
     this.resourceLevels = [];
     this.selectedGaccPl = 5;
     this.selectedNatPl = 5;
+    
+    // Track totals for Workload calculation: (Local Use + Exportation) / Staffing
+    this.currentLocalUse = 0;
+    this.currentExportation = 0;
+    this.currentStaffing = 0;
+    
     this.map = new Map3D('canvas-container', 'labels-container');
     this.flowOverlay = null;
 
@@ -273,6 +279,8 @@ class App {
       const outsource = Number(matchedRecord.outsource || matchedRecord.outsourced || 0);
       const staffing = Number(matchedRecord.staffing || (drawndown + outsource));
 
+      this.currentStaffing = staffing;
+
       document.getElementById('sankeyStaffingVal').innerText = Math.round(staffing).toLocaleString();
       document.getElementById('sankeyDrawdownVal').innerText = Math.round(drawndown).toLocaleString();
       document.getElementById('sankeyOutsourceVal').innerText = Math.round(outsource).toLocaleString();
@@ -282,6 +290,17 @@ class App {
 
       document.getElementById('barDrawdownFill').style.width = `${drawPct}%`;
       document.getElementById('barOutsourceFill').style.width = `${outPct}%`;
+
+      // Calculate Workload = (Local Use + Exportation) / Staffing Level
+      const workloadElem = document.getElementById('workloadVal');
+      if (workloadElem) {
+        if (staffing > 0) {
+          const workload = Math.round((this.currentLocalUse + this.currentExportation) / staffing);
+          workloadElem.innerHTML = `${workload} <span style="font-size: 0.65rem; font-weight: normal; color: #94a3b8;">days/year</span>`;
+        } else {
+          workloadElem.innerHTML = `N/A`;
+        }
+      }
     }
   }
 
@@ -319,11 +338,15 @@ class App {
       }
     });
 
+    // Store values for workload computation
+    this.currentLocalUse = localUse;
+    this.currentExportation = exportation;
+
     document.getElementById('kpiLocalUse').innerText = Math.round(localUse).toLocaleString();
     document.getElementById('kpiExportation').innerText = Math.round(exportation).toLocaleString();
     document.getElementById('kpiImportation').innerText = Math.round(importation).toLocaleString();
 
-    // Refresh capacity split UI
+    // Refresh capacity split UI & Workload calculation
     this.updateResourceFlowStream();
   }
 

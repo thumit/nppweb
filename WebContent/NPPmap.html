@@ -19,7 +19,7 @@
   <header class="top-navbar">
     <div class="nav-brand">NATIONAL PREPAREDNESS PLAN DEVELOPMENT (BETA)</div>
     <nav class="nav-tabs">
-      <button class="nav-tab active" id="tabMap">Planning Map</button>
+      <button class="nav-tab active" id="tabMap">Plan Details</button>
       <button class="nav-tab" id="tabAbout">👥 About Us</button>
     </nav>
   </header>
@@ -29,7 +29,7 @@
 
   <!-- Interactive Overlay Panel (Map View) -->
   <div class="gis-panel" id="gisPanel">
-    <h3>Annual Resource Use Projection</h3>
+    <h3>Annual Plan Projection</h3>
 
     <div class="form-group">
       <label for="planSelect">Scenario</label>
@@ -62,7 +62,7 @@
     </div>
 
     <div class="form-group">
-      <label>Daily Count Of Resource Usage</label>
+      <label>Resource Usage (Days Per Year)</label>
       <select class="form-control" id="dirSelect">
         <option value="all">All Flows (Local, Export, Import)</option>
         <option value="local">Local Use Only</option>
@@ -121,9 +121,13 @@
         <span class="sankey-badge" id="sankeyTotalBadge">TOTAL: 0</span>
       </div>
       <div class="sankey-stream-container">
-        <div class="sankey-node root-node">
+		<div class="sankey-node root-node">
           <div class="node-label">STAFFING LEVEL</div>
           <div class="node-val" id="sankeyStaffingVal">0</div>
+          <div class="workload-container" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px;">
+            <div class="node-label" style="font-size: 0.65rem; color: #94a3b8;">WORKLOAD</div>
+            <div class="workload-val" id="workloadVal" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8;">0 <span style="font-size: 0.65rem; font-weight: normal; color: #94a3b8;">days/yr</span></div>
+          </div>
         </div>
         <div class="sankey-connectors">
           <svg class="sankey-svg" width="100%" height="100%">
