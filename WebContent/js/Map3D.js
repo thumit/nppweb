@@ -346,7 +346,7 @@ export class Map3D {
     requestAnimationFrame(update);
   }
 
-  renderNationalCentroidHUDs(ranksData) {
+  renderNationalCentroidHUDs(ranksData, resourceName = '') {
     this.clearCentroidHUDs();
 
     // Hide standard GACC text labels during ALL mode to prevent overlap
@@ -418,9 +418,12 @@ export class Map3D {
       `;
 
       hudElem.innerHTML = `
-        <div style="font-weight: 700; font-size: 0.75rem; color: #38bdf8; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px;">${gaccName}</span>
-          <span style="font-size: 0.58rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 1px 3px; border-radius: 3px; font-weight: 600;">${code}</span>
+        <div style="font-weight: 700; font-size: 0.68rem; color: #38bdf8; padding-bottom: 2px; display: flex; justify-content: space-between; align-items: center; white-space: nowrap;">
+          <span style="overflow: hidden; text-overflow: ellipsis; margin-right: 4px;">${gaccName}</span>
+          <span style="font-size: 0.6rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 1px 3px; border-radius: 3px; font-weight: 600; flex-shrink: 0;">${code}</span>
+        </div>
+        <div style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          ${resourceName ? resourceName : 'All Resources'}
         </div>
         ${getMetricHTML('Staffing Level', ranksData.staffing, '#38bdf8')}
         ${getMetricHTML('Workload', ranksData.workload, '#f59e0b')}

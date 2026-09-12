@@ -610,7 +610,7 @@ class App {
           importation: importRank,
           supply: supplyObj,
           shortage: shortageObj
-        });
+        }, rawRes); // <-- Pass rawRes here so it displays the resource name!
       }
 
       return;
