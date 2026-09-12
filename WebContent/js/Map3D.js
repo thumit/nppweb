@@ -39,7 +39,7 @@ export class Map3D {
       "NWCC": { name: "Northwest",           color: 0x0f5257, emissive: 0x031719 },
       "ONCC": { name: "Northern California", color: 0x1b4965, emissive: 0x081721 },
       "OSCC": { name: "Southern California", color: 0x2b593f, emissive: 0x0b1a11 },
-      "GBCC": { name: "Great Basin",          color: 0x725114, emissive: 0x211704 },
+      "GBCC": { name: "Great Basin",         color: 0x725114, emissive: 0x211704 },
       "NRCC": { name: "Northern Rockies",    color: 0x1d3557, emissive: 0x070e17 },
       "RMCC": { name: "Rocky Mountain",      color: 0x4a2e35, emissive: 0x170b0e },
       "SWCC": { name: "Southwest",           color: 0x7a3328, emissive: 0x210c09 },
@@ -346,7 +346,7 @@ export class Map3D {
     requestAnimationFrame(update);
   }
 
-renderNationalCentroidHUDs(ranksData) {
+  renderNationalCentroidHUDs(ranksData) {
     this.clearCentroidHUDs();
 
     // Hide standard GACC text labels during ALL mode to prevent overlap
@@ -404,8 +404,8 @@ renderNationalCentroidHUDs(ranksData) {
         ${getMetricHTML('Staffing Level', ranksData.staffing, '#38bdf8')}
         ${getMetricHTML('Workload', ranksData.workload, '#f59e0b')}
         ${getMetricHTML('Local Use', ranksData.localUse, '#10b981')}
-        ${getMetricHTML('Exportation', ranksData.exportation, '#ef4444')}
         ${getMetricHTML('Importation', ranksData.importation, '#8b5cf6')}
+        ${getMetricHTML('Exportation', ranksData.exportation, '#ef4444')}
       `;
 
       this.labelsContainer.appendChild(hudElem);

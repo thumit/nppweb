@@ -62,10 +62,10 @@
       <div class="form-group">
         <label for="dirSelect">Resource Usage (Days Per Year)</label>
         <select class="form-control" id="dirSelect">
-          <option value="all">All Flows (Local Use, Exportation, Importation)</option>
+          <option value="all">All Flows (Local Use, Importation, Exportation)</option>
           <option value="local">Local Use Only</option>
-          <option value="outbound">Exportation Only</option>
           <option value="inbound">Importation Only</option>
+          <option value="outbound">Exportation Only</option>
         </select>
       </div>
 
@@ -76,14 +76,14 @@
           <div class="kpi-subdesc">Home resources used in the home GACC</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-val outbound-val" id="kpiExportation">0</div>
-          <div class="kpi-lbl">Exportation</div>
-          <div class="kpi-subdesc">Home resources sent to other GACCs</div>
-        </div>
-        <div class="kpi-card">
           <div class="kpi-val inbound-val" id="kpiImportation">0</div>
           <div class="kpi-lbl">Importation</div>
           <div class="kpi-subdesc">Resources from other GACCs received by the home GACC</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val outbound-val" id="kpiExportation">0</div>
+          <div class="kpi-lbl">Exportation</div>
+          <div class="kpi-subdesc">Home resources sent to other GACCs</div>
         </div>
       </div>
 
@@ -124,22 +124,23 @@
             <div class="node-val" id="sankeyStaffingVal">0</div>
             <div class="workload-container" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px;">
               <div class="node-label" style="font-size: 0.65rem; color: #94a3b8;">WORKLOAD</div>
-              <div class="workload-val" id="workloadVal" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8;">0 <span style="font-size: 0.65rem; font-weight: normal; color: #94a3b8;">days/yr</span></div>
+              <div class="workload-val" id="workloadVal" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8;">0</div>
+              <div style="font-size: 0.65rem; color: #94a3b8; line-height: 1.1;">days/year</div>
             </div>
           </div>
           <div class="sankey-connectors">
-            <svg class="sankey-svg" width="100%" height="100%">
-              <path id="pathDrawdown" d="M 0,15 C 30,15 30,12 60,12" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.8"/>
-              <path id="pathOutsource" d="M 0,25 C 30,25 30,35 60,35" stroke="#facc15" stroke-width="3" fill="none" opacity="0.8"/>
+            <svg class="sankey-svg" width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="none">
+              <path id="pathDrawdown" d="M 0,30 C 50,30 50,15 100,15" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.8"/>
+              <path id="pathOutsource" d="M 0,30 C 50,30 50,45 100,45" stroke="#facc15" stroke-width="3" fill="none" opacity="0.8"/>
             </svg>
           </div>
           <div class="sankey-branches">
             <div class="sankey-node branch-node drawdown-node">
-              <span class="node-lbl">DRAWDOWN</span>
+              <span class="node-lbl" style="white-space: nowrap;">DRAWDOWN (LOCAL USE)</span>
               <span class="node-num" id="sankeyDrawdownVal">0</span>
             </div>
             <div class="sankey-node branch-node outsource-node">
-              <span class="node-lbl">OUTSOURCE</span>
+              <span class="node-lbl" style="white-space: nowrap;">OUTSOURCE (EXPORTATION)</span>
               <span class="node-num" id="sankeyOutsourceVal">0</span>
             </div>
           </div>
@@ -215,6 +216,20 @@
   <div id="instructions">
     Rotate: Left Drag | Pan: Right Drag | Zoom: Scroll
   </div>
+
+  <!-- Auto-cleanup script to prevent JS script from double-injecting units -->
+  <script>
+    const observer = new MutationObserver(() => {
+      const el = document.getElementById('workloadVal');
+      if (el && el.textContent.toLowerCase().includes('days')) {
+        el.textContent = el.textContent.replace(/days\/year/gi, '').replace(/days/gi, '').trim();
+      }
+    });
+    const target = document.getElementById('workloadVal');
+    if (target) {
+      observer.observe(target, { childList: true, characterData: true, subtree: true });
+    }
+  </script>
 
   <script type="module" src="js/main.js"></script>
 </body>
