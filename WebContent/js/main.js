@@ -115,17 +115,22 @@ class App {
     this.currentPlan = planFolder;
     const folderPath = `data/${planFolder}`;
 
-    DataParser.loadDefaultCSVFile(
-      `${folderPath}/gacc_matrix.csv`, 
-      (data) => this.onDataLoaded(data),
-      (err) => console.error(`Failed to load matrix for ${planFolder}`, err)
-    );
-
+    // 1. Load the Resource Levels FIRST
     DataParser.loadResourceLevelCSV(
       `${folderPath}/resourcelevel.csv`, 
       (resData) => {
         this.resourceLevels = resData;
-        this.updateResourceFlowStream();
+        
+        // 2. Load the Matrix SECOND, ensuring resourceLevels is ready
+        DataParser.loadDefaultCSVFile(
+          `${folderPath}/gacc_matrix.csv`, 
+          (data) => {
+            this.onDataLoaded(data);
+            // We can optionally call this here, though updateFlows inside onDataLoaded will handle it
+            this.updateResourceFlowStream(); 
+          },
+          (err) => console.error(`Failed to load matrix for ${planFolder}`, err)
+        );
       }
     );
   }
