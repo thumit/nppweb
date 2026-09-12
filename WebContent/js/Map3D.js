@@ -396,6 +396,27 @@ export class Map3D {
         `;
       };
 
+      // Extract supply and shortage values safely from ranksData or fallback to 0
+      const supplyVal = (ranksData.supply && ranksData.supply[code] !== undefined) ? ranksData.supply[code] : (ranksData.supplyVal && ranksData.supplyVal[code] !== undefined ? ranksData.supplyVal[code] : 0);
+      const shortageVal = (ranksData.shortage && ranksData.shortage[code] !== undefined) ? ranksData.shortage[code] : (ranksData.shortageVal && ranksData.shortageVal[code] !== undefined ? ranksData.shortageVal[code] : 0);
+      
+      const totalVal = supplyVal + shortageVal;
+      const supplyPct = totalVal > 0 ? (supplyVal / totalVal) * 100 : 0;
+      const shortagePct = totalVal > 0 ? (shortageVal / totalVal) * 100 : 0;
+
+      const stackbarHTML = `
+        <div style="margin-top: 5px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+          <div style="display: flex; justify-content: space-between; font-size: 0.55rem; color: #94a3b8; margin-bottom: 2px;">
+            <span>Supply: <strong style="color: #10b981;">${supplyVal.toLocaleString()}</strong></span>
+            <span>Shortage: <strong style="color: #ef4444;">${shortageVal.toLocaleString()}</strong></span>
+          </div>
+          <div style="display: flex; height: 6px; width: 100%; background: rgba(255, 255, 255, 0.06); border-radius: 3px; overflow: hidden;">
+            <div style="width: ${supplyPct}%; background: #10b981; height: 100%; transition: width 0.3s ease;"></div>
+            <div style="width: ${shortagePct}%; background: #ef4444; height: 100%; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+
       hudElem.innerHTML = `
         <div style="font-weight: 700; font-size: 0.75rem; color: #38bdf8; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center;">
           <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px;">${gaccName}</span>
@@ -406,6 +427,7 @@ export class Map3D {
         ${getMetricHTML('Local Use', ranksData.localUse, '#10b981')}
         ${getMetricHTML('Importation', ranksData.importation, '#8b5cf6')}
         ${getMetricHTML('Exportation', ranksData.exportation, '#ef4444')}
+        ${stackbarHTML}
       `;
 
       this.labelsContainer.appendChild(hudElem);

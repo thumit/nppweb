@@ -6,6 +6,7 @@ class App {
   constructor() {
     this.movementMatrix = [];
     this.resourceLevels = [];
+    this.demandRecords = []; // Track demand data records
     this.selectedGaccPl = 5;
     this.selectedNatPl = 5;
     
@@ -115,23 +116,38 @@ class App {
     this.currentPlan = planFolder;
     const folderPath = `data/${planFolder}`;
 
-    // 1. Load the Resource Levels FIRST
+    // 1. Load Resource Levels FIRST
     DataParser.loadResourceLevelCSV(
       `${folderPath}/resourcelevel.csv`, 
       (resData) => {
         this.resourceLevels = resData;
         
-        // 2. Load the Matrix SECOND, ensuring resourceLevels is ready
-        DataParser.loadDefaultCSVFile(
-          `${folderPath}/gacc_matrix.csv`, 
-          (data) => {
-            this.onDataLoaded(data);
-            // We can optionally call this here, though updateFlows inside onDataLoaded will handle it
-            this.updateResourceFlowStream(); 
-          },
-          (err) => console.error(`Failed to load matrix for ${planFolder}`, err)
+        // 2. Load Demand CSV NEXT (fallback to empty array if fails or method differs)
+        const loadDemand = DataParser.loadDemandCSVFile || DataParser.loadDefaultCSVFile;
+        loadDemand(
+          `${folderPath}/demand.csv`, 
+          (demandData) => {
+            this.demandRecords = demandData || [];
+            this.proceedWithMatrixLoad(folderPath);
+          }, 
+          () => {
+            this.demandRecords = [];
+            this.proceedWithMatrixLoad(folderPath);
+          }
         );
       }
+    );
+  }
+
+  proceedWithMatrixLoad(folderPath) {
+    // 3. Load the Matrix LAST, ensuring resourceLevels and demandRecords are ready
+    DataParser.loadDefaultCSVFile(
+      `${folderPath}/gacc_matrix.csv`, 
+      (data) => {
+        this.onDataLoaded(data);
+        this.updateResourceFlowStream(); 
+      },
+      (err) => console.error(`Failed to load matrix for ${planFolder}`, err)
     );
   }
 
@@ -557,6 +573,28 @@ class App {
         };
       });
 
+      // Aggregate Supply and Shortage from demand records matching current resource type (rounded to integers)
+      const supplyObj = {};
+      const shortageObj = {};
+
+      this.demandRecords.forEach(d => {
+        const itemRes = String(d.resource || '').trim().toLowerCase(); 
+        
+        // Normalize both by turning any underscores or multiple spaces into a single space
+        const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
+        const normalizedResType = resType.replace(/[\s_]+/g, ' ');
+
+        if (normalizedItemRes === normalizedResType) {
+          const gacc = String(d.gacc || '').trim().toUpperCase();
+          const demand = Number(d.demand) || 0;
+          const unmet = Number(d.shortage) || 0;
+          const supplied = Number(d.supply) || Math.max(0, demand - unmet);
+
+          supplyObj[gacc] = (supplyObj[gacc] || 0) + Math.round(supplied);
+          shortageObj[gacc] = (shortageObj[gacc] || 0) + Math.round(unmet);
+        }
+      });
+
       // Clear any existing 3D flow lines when National Overview (ALL) is selected
       if (this.flowOverlay) {
         this.flowOverlay.clear();
@@ -569,7 +607,9 @@ class App {
           workload: workloadRank,
           localUse: localRank,
           exportation: exportRank,
-          importation: importRank
+          importation: importRank,
+          supply: supplyObj,
+          shortage: shortageObj
         });
       }
 

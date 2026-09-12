@@ -141,4 +141,49 @@ export class DataParser {
     }
     return records;
   }
+
+  static loadDemandCSVFile(filePath, onComplete, onError) {
+    fetch(filePath)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(csvText => {
+        const parsed = DataParser.parseDemandCSVText(csvText);
+        if (onComplete) onComplete(parsed, filePath);
+      })
+      .catch(error => {
+        console.warn(`Could not automatically load demand file ${filePath}:`, error);
+        if (onError) onError(error);
+      });
+  }
+
+  static parseDemandCSVText(csvText) {
+    const lines = csvText.split(/\r?\n/);
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const records = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      const cols = line.split(',').map(c => c.trim());
+      if (cols.length < headers.length) continue;
+
+	  if (cols.length >= 2) {
+        records.push({
+          resource: cols[0],           
+          gacc: cols[1].toUpperCase(),     
+          demand: parseFloat(cols[2]),                        
+          shortage: parseFloat(cols[3]),                      
+          supply: parseFloat(cols[4]),                        
+        });
+      }
+    }
+    return records;
+  }
 }
