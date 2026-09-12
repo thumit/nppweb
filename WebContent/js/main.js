@@ -308,7 +308,7 @@ class App {
         if (selectedRes && crew) {
           const cleanSelected = selectedRes.replace(/[^a-z0-9]/g, '');
           const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
-          matchesCrew = cleanSelected.includes(cleanCrew) || cleanCrew.includes(cleanSelected);
+          matchesCrew = (cleanSelected === cleanCrew);
         }
 
         return matchesGacc && matchesNat && matchesCrew;
@@ -374,7 +374,7 @@ class App {
       if (selectedRes && crew) {
         const cleanSelected = selectedRes.replace(/[^a-z0-9]/g, '');
         const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
-        matchesCrew = cleanSelected.includes(cleanCrew) || cleanCrew.includes(cleanSelected);
+        matchesCrew = (cleanSelected === cleanCrew);
       }
 
       return matchesGacc && matchesNat && matchesCrew;
@@ -481,7 +481,7 @@ class App {
           if (resType && crew) {
             const cleanSelected = resType.replace(/[^a-z0-9]/g, '');
             const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
-            matchesCrew = cleanSelected.includes(cleanCrew) || cleanCrew.includes(cleanSelected);
+            matchesCrew = (cleanSelected === cleanCrew);
           }
 
           return reg === gaccCode && gaccPl === this.selectedGaccPl && natPl === this.selectedNatPl && matchesCrew;
