@@ -515,10 +515,14 @@ class App {
         const result = {};
         const total = list.reduce((sum, item) => sum + item.val, 0);
 
+        let currentRank = 1;
         list.forEach((item, index) => {
+          if (index > 0 && item.val < list[index - 1].val) {
+            currentRank = index + 1;
+          }
           result[item.gacc] = {
             val: item.val,
-            rank: index + 1,
+            rank: currentRank,
             pct: total > 0 ? ((item.val / total) * 100).toFixed(1) + '%' : '0.0%'
           };
         });
