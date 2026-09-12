@@ -31,18 +31,21 @@ export class Map3D {
     this.gaccCentroids = {};
     this.selectedGaccGroup = null;
 
-	this.GACC_CONFIG = {
-	  "AICC": { name: "Alaska",              color: 0x1e293b, emissive: 0x090d16 }, // Ice Slate / Deep Charcoal
-	  "NWCC": { name: "Northwest",           color: 0x0f5257, emissive: 0x031719 }, // Deep Emerald Teal
-	  "ONCC": { name: "Northern California", color: 0x1b4965, emissive: 0x081721 }, // Deep Ocean Blue
-	  "OSCC": { name: "Southern California", color: 0x2b593f, emissive: 0x0b1a11 }, // Muted Forest
-	  "GBCC": { name: "Great Basin",          color: 0x725114, emissive: 0x211704 }, // Polished Amber
-	  "NRCC": { name: "Northern Rockies",    color: 0x1d3557, emissive: 0x070e17 }, // Midnight Navy
-	  "RMCC": { name: "Rocky Mountain",      color: 0x4a2e35, emissive: 0x170b0e }, // Deep Mulberry / Wine
-	  "SWCC": { name: "Southwest",           color: 0x7a3328, emissive: 0x210c09 }, // Muted Terracotta
-	  "SACC": { name: "Southern",            color: 0x495057, emissive: 0x111315 }, // Metallic Slate
-	  "EACC": { name: "Eastern",             color: 0x2c3e50, emissive: 0x0a1118 }  // Steel Slate
-	};
+    // Store dynamic HTML HUD overlay instances for ALL GACCs mode
+    this.centroidHuds = [];
+
+    this.GACC_CONFIG = {
+      "AICC": { name: "Alaska",              color: 0x1e293b, emissive: 0x090d16 },
+      "NWCC": { name: "Northwest",           color: 0x0f5257, emissive: 0x031719 },
+      "ONCC": { name: "Northern California", color: 0x1b4965, emissive: 0x081721 },
+      "OSCC": { name: "Southern California", color: 0x2b593f, emissive: 0x0b1a11 },
+      "GBCC": { name: "Great Basin",          color: 0x725114, emissive: 0x211704 },
+      "NRCC": { name: "Northern Rockies",    color: 0x1d3557, emissive: 0x070e17 },
+      "RMCC": { name: "Rocky Mountain",      color: 0x4a2e35, emissive: 0x170b0e },
+      "SWCC": { name: "Southwest",           color: 0x7a3328, emissive: 0x210c09 },
+      "SACC": { name: "Southern",            color: 0x495057, emissive: 0x111315 },
+      "EACC": { name: "Eastern",             color: 0x2c3e50, emissive: 0x0a1118 }
+    };
 
     this.fipsToAbbrev = {
       "01": "AL", "02": "AK", "04": "AZ", "05": "AR", "06": "CA", "08": "CO", "09": "CT", "10": "DE",
@@ -58,25 +61,22 @@ export class Map3D {
     window.addEventListener('resize', () => this.onWindowResize());
   }
 
-	initLighting() {
-	  // Lower ambient light to prevent surface washout
-	  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
-	  this.scene.add(ambientLight);
-	
-	  // Softer directional light with focused angle
-	  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-	  dirLight.position.set(100, 300, 150);
-	  this.scene.add(dirLight);
-	
-	  // Subtle cyan rim lighting to give 3D edges depth
-	  const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.35);
-	  rimLight.position.set(-200, 150, -200);
-	  this.scene.add(rimLight);
-	
-	  const gridHelper = new THREE.GridHelper(1600, 50, 0x1e293b, 0x0f172a);
-	  gridHelper.position.y = -0.5;
-	  this.scene.add(gridHelper);
-	}
+  initLighting() {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+    this.scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    dirLight.position.set(100, 300, 150);
+    this.scene.add(dirLight);
+
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.35);
+    rimLight.position.set(-200, 150, -200);
+    this.scene.add(rimLight);
+
+    const gridHelper = new THREE.GridHelper(1600, 50, 0x1e293b, 0x0f172a);
+    gridHelper.position.y = -0.5;
+    this.scene.add(gridHelper);
+  }
 
   loadMapData(onReadyCallback) {
     fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
@@ -346,10 +346,97 @@ export class Map3D {
     requestAnimationFrame(update);
   }
 
+renderNationalCentroidHUDs(ranksData) {
+    this.clearCentroidHUDs();
+
+    // Hide standard GACC text labels during ALL mode to prevent overlap
+    this.gaccLabels.forEach(item => {
+      item.element.style.display = 'none';
+    });
+
+    Object.keys(this.gaccCentroids).forEach(code => {
+      const pos = this.gaccCentroids[code];
+      const gaccName = this.GACC_CONFIG[code] ? this.GACC_CONFIG[code].name : code;
+
+      const hudElem = document.createElement('div');
+      hudElem.className = 'gacc-national-hud';
+      hudElem.style.cssText = `
+        position: absolute;
+        transform: translate(-50%, -100%);
+        background: rgba(10, 15, 30, 0.95);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 12px rgba(56, 189, 248, 0.12);
+        border-radius: 8px;
+        padding: 6px 8px;
+        color: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 0.68rem;
+        pointer-events: none;
+        z-index: 1000;
+        width: 145px;
+        backdrop-filter: blur(8px);
+        transition: opacity 0.2s ease, transform 0.1s ease;
+      `;
+
+      const getMetricHTML = (label, dataObj, colorHex) => {
+        if (!dataObj || !dataObj[code]) return '';
+        const m = dataObj[code];
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3px; padding-bottom: 3px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+            <div style="display: flex; flex-direction: column; overflow: hidden;">
+              <span style="color: #94a3b8; font-size: 0.55rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${label}</span>
+              <span style="font-size: 0.68rem; font-weight: 600; color: #f8fafc; white-space: nowrap;">
+                ${m.val.toLocaleString()} <span style="font-size: 0.58rem; font-weight: 400; color: #94a3b8;">(${m.pct})</span>
+              </span>
+            </div>
+            <span style="font-weight: 700; color: ${colorHex}; background: ${colorHex}18; padding: 1px 4px; border-radius: 3px; border: 1px solid ${colorHex}40; font-size: 0.65rem; min-width: 20px; text-align: center; flex-shrink: 0;">
+              #${m.rank}
+            </span>
+          </div>
+        `;
+      };
+
+      hudElem.innerHTML = `
+        <div style="font-weight: 700; font-size: 0.75rem; color: #38bdf8; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px;">${gaccName}</span>
+          <span style="font-size: 0.58rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 1px 3px; border-radius: 3px; font-weight: 600;">${code}</span>
+        </div>
+        ${getMetricHTML('Staffing Level', ranksData.staffing, '#38bdf8')}
+        ${getMetricHTML('Workload', ranksData.workload, '#f59e0b')}
+        ${getMetricHTML('Local Use', ranksData.localUse, '#10b981')}
+        ${getMetricHTML('Exportation', ranksData.exportation, '#ef4444')}
+        ${getMetricHTML('Importation', ranksData.importation, '#8b5cf6')}
+      `;
+
+      this.labelsContainer.appendChild(hudElem);
+      this.centroidHuds.push({
+        element: hudElem,
+        pos: pos
+      });
+    });
+  }
+
+  clearCentroidHUDs() {
+    this.centroidHuds.forEach(hud => {
+      if (hud.element && hud.element.parentNode) {
+        hud.element.parentNode.removeChild(hud.element);
+      }
+    });
+    this.centroidHuds = [];
+
+    // Re-enable standard GACC text labels
+    this.gaccLabels.forEach(item => {
+      item.element.style.display = 'block';
+    });
+  }
+
   updateLabels() {
     const tempV = new THREE.Vector3();
 
+    // 1. Update standard labels
     this.gaccLabels.forEach(item => {
+      if (item.element.style.display === 'none') return;
+
       tempV.copy(item.pos);
       tempV.y += item.group.position.y;
       tempV.add(this.mapGroup.position);
@@ -367,6 +454,25 @@ export class Map3D {
       item.element.style.left = `${x}px`;
       item.element.style.top = `${y}px`;
       item.element.style.opacity = '1';
+    });
+
+    // 2. Update National HUD position overlays
+    this.centroidHuds.forEach(hud => {
+      tempV.copy(hud.pos);
+      tempV.y += 18; // Offset slightly above the map 3D surface
+      tempV.project(this.camera);
+
+      if (tempV.z > 1) {
+        hud.element.style.opacity = '0';
+        return;
+      }
+
+      const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
+
+      hud.element.style.left = `${x}px`;
+      hud.element.style.top = `${y}px`;
+      hud.element.style.opacity = '1';
     });
   }
 

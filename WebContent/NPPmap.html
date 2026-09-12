@@ -45,32 +45,24 @@
       </div>
 
       <div class="form-group">
-        <label>Geographic Area Coordination Center (GACC)</label>
+        <label for="gaccSelect">Geographic Area Coordination Center (GACC)</label>
         <select class="form-control" id="gaccSelect">
-          <option value="NWCC">NWCC</option>
-          <option value="OSCC">OSCC</option>
-          <option value="ONCC">ONCC</option>
-          <option value="NRCC">NRCC</option>
-          <option value="GBCC">GBCC</option>
-          <option value="SWCC">SWCC</option>
-          <option value="RMCC">RMCC</option>
-          <option value="AICC">AICC</option>
-          <option value="EACC">EACC</option>
-          <option value="SACC">SACC</option>
+          <option value="ALL" selected>National Overview: All GACCs</option>
+          <!-- Populated by JS -->
         </select>
       </div>
 
       <div class="form-group">
-        <label>Resource Type</label>
+        <label for="resSelect">Resource Type</label>
         <select class="form-control" id="resSelect">
           <!-- Populated by JS -->
         </select>
       </div>
 
       <div class="form-group">
-        <label>Resource Usage (Days Per Year)</label>
+        <label for="dirSelect">Resource Usage (Days Per Year)</label>
         <select class="form-control" id="dirSelect">
-          <option value="all">All Flows (Local, Export, Import)</option>
+          <option value="all">All Flows (Local Use, Exportation, Importation)</option>
           <option value="local">Local Use Only</option>
           <option value="outbound">Exportation Only</option>
           <option value="inbound">Importation Only</option>
