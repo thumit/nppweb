@@ -21,7 +21,7 @@ class App {
     // Available scenario plan folders inside data/
     this.availablePlans = [
       { name: 'Plan A', enabled: true },
-      { name: 'Plan B', enabled: false },
+      { name: 'Plan B', enabled: true },
       { name: 'Plan C', enabled: false },
       { name: 'Plan D', enabled: false }
     ];
