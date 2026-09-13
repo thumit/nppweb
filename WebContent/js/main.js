@@ -526,11 +526,11 @@ class App {
 
       this.updateResourceFlowStream();
 
-      // Compute ranks across all GACCs
+      // Compute ranks across all GACCs (Rounded integers directly at source)
       const computeRankings = (getter) => {
         const list = Object.keys(gaccStats).map(gacc => ({
           gacc,
-          val: getter(gaccStats[gacc])
+          val: Math.round(getter(gaccStats[gacc]))
         })).sort((a, b) => b.val - a.val);
 
         const result = {};
@@ -550,7 +550,7 @@ class App {
         return result;
       };
 
-      // Aggregate Supply and Shortage as plain number dictionaries + National Totals
+      // Aggregate Supply and Shortage as rounded integers
       const supplyObj = {};
       const shortageObj = {};
       let totalNationalDemand = 0;
@@ -595,7 +595,7 @@ class App {
         const staff = gaccStats[gacc].staffing;
         const totalDemand = gaccStats[gacc].local + gaccStats[gacc].export;
         const wl = staff > 0 ? totalDemand / staff : 0;
-        return { gacc, val: wl };
+        return { gacc, val: Math.round(wl) };
       }).sort((a, b) => b.val - a.val);
 
       const nationalAvgWorkload = natStaffing > 0 ? (natLocal + natExport) / natStaffing : 0;
@@ -603,7 +603,7 @@ class App {
       workloadList.forEach((item, index) => {
         const ratioToAvg = nationalAvgWorkload > 0 ? ((item.val / nationalAvgWorkload) * 100).toFixed(0) + '%' : '0%';
         workloadRank[item.gacc] = {
-          val: Math.round(item.val),
+          val: item.val,
           rank: index + 1,
           pct: ratioToAvg
         };
