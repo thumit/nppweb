@@ -62,7 +62,7 @@ export class DataParser {
       const upperFirstCell = firstCell.toUpperCase();
 
       const gaccMatches = row.map(cell => String(cell || '').trim().toUpperCase())
-                             .filter(cell => validGACCs.includes(cell));
+                           .filter(cell => validGACCs.includes(cell));
 
       if (gaccMatches.length >= 3) {
         activeDestHeaders = row.map(cell => String(cell || '').trim().toUpperCase());
@@ -172,17 +172,15 @@ export class DataParser {
       if (!line) continue;
       
       const cols = line.split(',').map(c => c.trim());
-      if (cols.length < headers.length) continue;
+      if (cols.length < headers.length) continue; // Fixed from cols.length >= 2
 
-	  if (cols.length >= 2) {
-        records.push({
-          resource: cols[0],           
-          gacc: cols[1].toUpperCase(),     
-          demand: parseFloat(cols[2]),                        
-          shortage: parseFloat(cols[3]),                      
-          supply: parseFloat(cols[4]),                        
-        });
-      }
+      records.push({
+        resource: cols[0],            
+        gacc: cols[1].toUpperCase(),      
+        demand: parseFloat(cols[2]),                        
+        shortage: parseFloat(cols[3]),                        
+        supply: parseFloat(cols[4]),                        
+      });
     }
     return records;
   }

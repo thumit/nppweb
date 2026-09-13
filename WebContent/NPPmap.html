@@ -69,21 +69,41 @@
         </select>
       </div>
 
+      <!-- Demand, Supply, and Shortage Cards -->
+      <div class="kpi-container">
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiDemand">0</div>
+          <div class="kpi-lbl">Demand</div>
+          <div class="kpi-subdesc">Day counts required by home GACC</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiSupply" style="color: #10b981;">0</div>
+          <div class="kpi-lbl">Supply</div>
+          <div class="kpi-subdesc">LOCAL USE plus IMPORTATION</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpiShortage" style="color: #ef4444;">0</div>
+          <div class="kpi-lbl">Shortage</div>
+          <div class="kpi-subdesc">Day counts deficit</div>
+        </div>
+      </div>
+
+      <!-- Existing KPI Cards -->
       <div class="kpi-container">
         <div class="kpi-card">
           <div class="kpi-val" id="kpiLocalUse">0</div>
           <div class="kpi-lbl">Local Use</div>
-          <div class="kpi-subdesc">Home resources used in the home GACC</div>
+          <div class="kpi-subdesc">Day counts in home GACC using home resources</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-val inbound-val" id="kpiImportation">0</div>
           <div class="kpi-lbl">Importation</div>
-          <div class="kpi-subdesc">Resources from other GACCs received by the home GACC</div>
+          <div class="kpi-subdesc">Day counts in home GACC using other GACCs' resources</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-val outbound-val" id="kpiExportation">0</div>
           <div class="kpi-lbl">Exportation</div>
-          <div class="kpi-subdesc">Home resources sent to other GACCs</div>
+          <div class="kpi-subdesc">Day counts in other GACCs using home GACC's resources</div>
         </div>
       </div>
 
@@ -120,12 +140,12 @@
         </div>
         <div class="sankey-stream-container">
           <div class="sankey-node root-node">
-            <div class="node-label">STAFFING LEVEL</div>
+            <div class="node-label" style="white-space: nowrap;text-align: center;">STAFFING LEVEL</div>
             <div class="node-val" id="sankeyStaffingVal">0</div>
             <div class="workload-container" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 4px;">
-              <div class="node-label" style="font-size: 0.65rem; color: #94a3b8;">WORKLOAD</div>
+              <div class="node-label" style="font-size: 0.55rem; color: #94a3b8;">WORKLOAD</div>
               <div class="workload-val" id="workloadVal" style="font-size: 0.85rem; font-weight: bold; color: #38bdf8;">0</div>
-              <div style="font-size: 0.65rem; color: #94a3b8; line-height: 1.1;">days/year</div>
+              <div style="font-size: 0.65rem; color: #94a3b8; line-height: 1.0;">days/year</div>
             </div>
           </div>
           <div class="sankey-connectors">

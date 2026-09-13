@@ -550,6 +550,42 @@ class App {
         return result;
       };
 
+      // Aggregate Supply and Shortage as plain number dictionaries + National Totals
+      const supplyObj = {};
+      const shortageObj = {};
+      let totalNationalDemand = 0;
+      let totalNationalSupply = 0;
+      let totalNationalShortage = 0;
+
+      this.demandRecords.forEach(d => {
+        const itemRes = String(d.resource || '').trim().toLowerCase(); 
+        const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
+        const normalizedResType = resType.replace(/[\s_]+/g, ' ');
+
+        if (normalizedItemRes === normalizedResType) {
+          const gacc = String(d.gacc || '').trim().toUpperCase();
+          const demand = Number(d.demand) || 0;
+          const unmet = Number(d.shortage) || 0;
+          const supplied = Number(d.supply) || Math.max(0, demand - unmet);
+
+          supplyObj[gacc] = (supplyObj[gacc] || 0) + Math.round(supplied);
+          shortageObj[gacc] = (shortageObj[gacc] || 0) + Math.round(unmet);
+
+          totalNationalDemand += demand;
+          totalNationalSupply += supplied;
+          totalNationalShortage += unmet;
+        }
+      });
+
+      // Update Demand, Supply, Shortage right panel KPIs for National Overview
+      const kpiDemand = document.getElementById('kpiDemand');
+      const kpiSupply = document.getElementById('kpiSupply');
+      const kpiShortage = document.getElementById('kpiShortage');
+
+      if (kpiDemand) kpiDemand.innerText = Math.round(totalNationalDemand).toLocaleString();
+      if (kpiSupply) kpiSupply.innerText = Math.round(totalNationalSupply).toLocaleString();
+      if (kpiShortage) kpiShortage.innerText = Math.round(totalNationalShortage).toLocaleString();
+
       const staffingRank = computeRankings(s => s.staffing);
       const localRank = computeRankings(s => s.local);
       const exportRank = computeRankings(s => s.export);
@@ -573,28 +609,6 @@ class App {
         };
       });
 
-      // Aggregate Supply and Shortage from demand records matching current resource type (rounded to integers)
-      const supplyObj = {};
-      const shortageObj = {};
-
-      this.demandRecords.forEach(d => {
-        const itemRes = String(d.resource || '').trim().toLowerCase(); 
-        
-        // Normalize both by turning any underscores or multiple spaces into a single space
-        const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
-        const normalizedResType = resType.replace(/[\s_]+/g, ' ');
-
-        if (normalizedItemRes === normalizedResType) {
-          const gacc = String(d.gacc || '').trim().toUpperCase();
-          const demand = Number(d.demand) || 0;
-          const unmet = Number(d.shortage) || 0;
-          const supplied = Number(d.supply) || Math.max(0, demand - unmet);
-
-          supplyObj[gacc] = (supplyObj[gacc] || 0) + Math.round(supplied);
-          shortageObj[gacc] = (shortageObj[gacc] || 0) + Math.round(unmet);
-        }
-      });
-
       // Clear any existing 3D flow lines when National Overview (ALL) is selected
       if (this.flowOverlay) {
         this.flowOverlay.clear();
@@ -610,7 +624,7 @@ class App {
           importation: importRank,
           supply: supplyObj,
           shortage: shortageObj
-        }, rawRes); // <-- Pass rawRes here so it displays the resource name!
+        }, rawRes);
       }
 
       return;
@@ -654,6 +668,33 @@ class App {
     if (kpiLocalUse) kpiLocalUse.innerText = Math.round(localUse).toLocaleString();
     if (kpiExportation) kpiExportation.innerText = Math.round(exportation).toLocaleString();
     if (kpiImportation) kpiImportation.innerText = Math.round(importation).toLocaleString();
+
+    // Extract Demand, Supply, Shortage for the specific selected GACC
+    let singleDemand = 0, singleSupply = 0, singleShortage = 0;
+    this.demandRecords.forEach(d => {
+      const itemRes = String(d.resource || '').trim().toLowerCase();
+      const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
+      const normalizedResType = resType.replace(/[\s_]+/g, ' ');
+      const gacc = String(d.gacc || '').trim().toUpperCase();
+
+      if (normalizedItemRes === normalizedResType && gacc === focusGACC) {
+        const demand = Number(d.demand) || 0;
+        const unmet = Number(d.shortage) || 0;
+        const supplied = Number(d.supply) || Math.max(0, demand - unmet);
+
+        singleDemand += demand;
+        singleSupply += supplied;
+        singleShortage += unmet;
+      }
+    });
+
+    const kpiDemand = document.getElementById('kpiDemand');
+    const kpiSupply = document.getElementById('kpiSupply');
+    const kpiShortage = document.getElementById('kpiShortage');
+
+    if (kpiDemand) kpiDemand.innerText = Math.round(singleDemand).toLocaleString();
+    if (kpiSupply) kpiSupply.innerText = Math.round(singleSupply).toLocaleString();
+    if (kpiShortage) kpiShortage.innerText = Math.round(singleShortage).toLocaleString();
 
     this.updateResourceFlowStream();
   }

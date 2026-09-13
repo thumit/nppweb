@@ -3,14 +3,17 @@ export class Map3D {
     this.container = document.getElementById(containerId);
     this.labelsContainer = document.getElementById(labelsContainerId);
 
+    const width = this.container.clientWidth || window.innerWidth;
+    const height = this.container.clientHeight || window.innerHeight;
+
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x050811);
 
-    this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 3000);
+    this.camera = new THREE.PerspectiveCamera(40, width / height, 1, 3000);
     this.camera.position.set(0, 380, 480);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.container.appendChild(this.renderer.domElement);
 
@@ -36,7 +39,7 @@ export class Map3D {
 
     this.GACC_CONFIG = {
       "AICC": { name: "Alaska",              color: 0x1e293b, emissive: 0x090d16 },
-      "NWCC": { name: "Northwest",           color: 0x0f5257, emissive: 0x031719 },
+      "NWCC": { name: "Northwest",          color: 0x0f5257, emissive: 0x031719 },
       "ONCC": { name: "Northern California", color: 0x1b4965, emissive: 0x081721 },
       "OSCC": { name: "Southern California", color: 0x2b593f, emissive: 0x0b1a11 },
       "GBCC": { name: "Great Basin",         color: 0x725114, emissive: 0x211704 },
@@ -396,7 +399,6 @@ export class Map3D {
         `;
       };
 
-      // Extract supply and shortage values safely from ranksData or fallback to 0
       const supplyVal = (ranksData.supply && ranksData.supply[code] !== undefined) ? ranksData.supply[code] : (ranksData.supplyVal && ranksData.supplyVal[code] !== undefined ? ranksData.supplyVal[code] : 0);
       const shortageVal = (ranksData.shortage && ranksData.shortage[code] !== undefined) ? ranksData.shortage[code] : (ranksData.shortageVal && ranksData.shortageVal[code] !== undefined ? ranksData.shortageVal[code] : 0);
       
@@ -457,6 +459,8 @@ export class Map3D {
 
   updateLabels() {
     const tempV = new THREE.Vector3();
+    const containerWidth = this.container.clientWidth || window.innerWidth;
+    const containerHeight = this.container.clientHeight || window.innerHeight;
 
     // 1. Update standard labels
     this.gaccLabels.forEach(item => {
@@ -473,8 +477,8 @@ export class Map3D {
         return;
       }
 
-      const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
+      const x = (tempV.x * 0.5 + 0.5) * containerWidth;
+      const y = (tempV.y * -0.5 + 0.5) * containerHeight;
 
       item.element.style.left = `${x}px`;
       item.element.style.top = `${y}px`;
@@ -492,8 +496,8 @@ export class Map3D {
         return;
       }
 
-      const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
-      const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
+      const x = (tempV.x * 0.5 + 0.5) * containerWidth;
+      const y = (tempV.y * -0.5 + 0.5) * containerHeight;
 
       hud.element.style.left = `${x}px`;
       hud.element.style.top = `${y}px`;
@@ -502,8 +506,11 @@ export class Map3D {
   }
 
   onWindowResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
+    const width = this.container.clientWidth || window.innerWidth;
+    const height = this.container.clientHeight || window.innerHeight;
+
+    this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(width, height);
   }
 }
