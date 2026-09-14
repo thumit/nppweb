@@ -363,6 +363,15 @@ export class Map3D {
 
       const hudElem = document.createElement('div');
       hudElem.className = 'gacc-national-hud';
+      
+      // Stop click/pointer events from leaking down to the 3D map canvas
+      hudElem.addEventListener('pointerdown', (e) => e.stopPropagation());
+      hudElem.addEventListener('click', (e) => e.stopPropagation());
+      
+      // Hover listeners to manage foreground stacking class
+      hudElem.addEventListener('mouseenter', () => hudElem.classList.add('is-hovered'));
+      hudElem.addEventListener('mouseleave', () => hudElem.classList.remove('is-hovered'));
+
       hudElem.style.cssText = `
         position: absolute;
         transform: translate(-50%, -100%);
@@ -374,11 +383,11 @@ export class Map3D {
         color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 0.68rem;
-        pointer-events: none;
-        z-index: 1000;
+        pointer-events: auto;
+        z-index: 10;
         width: 145px;
         backdrop-filter: blur(8px);
-        transition: opacity 0.2s ease, transform 0.1s ease;
+        transition: opacity 0.2s ease, transform 0.15s ease, z-index 0.15s ease;
       `;
 
       const getMetricHTML = (label, dataObj, colorHex) => {
@@ -502,6 +511,12 @@ export class Map3D {
       hud.element.style.left = `${x}px`;
       hud.element.style.top = `${y}px`;
       hud.element.style.opacity = '1';
+
+      // Preserve scale transform if hovered so the render loop doesn't override it
+      const isHovered = hud.element.classList.contains('is-hovered');
+      hud.element.style.transform = isHovered 
+        ? 'translate(-50%, -100%) scale(1.05)' 
+        : 'translate(-50%, -100%)';
     });
   }
 

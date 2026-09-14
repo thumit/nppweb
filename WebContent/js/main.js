@@ -200,6 +200,34 @@ class App {
       panel.addEventListener('click', (e) => e.stopPropagation());
     }
 
+    // Hover-focus event listeners for national GACC HUD cards ensuring proper layer stacking
+    const labelsContainer = document.getElementById('labels-container');
+    if (labelsContainer) {
+      labelsContainer.addEventListener('mouseover', (e) => {
+        const card = e.target.closest('.gacc-national-hud');
+        if (card && card.parentElement === labelsContainer) {
+          // Remove hover and reset z-index from any other cards first to prevent stale states
+          labelsContainer.querySelectorAll('.gacc-national-hud').forEach(c => {
+            c.classList.remove('is-hovered');
+            c.style.zIndex = '';
+          });
+          card.classList.add('is-hovered');
+          card.style.zIndex = '1000'; // Dynamically bring the active card to the front
+        }
+      });
+
+      labelsContainer.addEventListener('mouseout', (e) => {
+        const card = e.target.closest('.gacc-national-hud');
+        if (card && card.parentElement === labelsContainer) {
+          // Only clear if we are actually leaving the card entirely
+          if (!card.contains(e.relatedTarget)) {
+            card.classList.remove('is-hovered');
+            card.style.zIndex = ''; // Reset z-index
+          }
+        }
+      });
+    }
+
     window.addEventListener('pointerdown', (event) => {
       if (event.clientY < 52 || event.target.closest('#gisPanel') || event.target.closest('.top-navbar')) {
         return;
