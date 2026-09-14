@@ -172,16 +172,142 @@ export class DataParser {
       if (!line) continue;
       
       const cols = line.split(',').map(c => c.trim());
-      if (cols.length < headers.length) continue; // Fixed from cols.length >= 2
+      if (cols.length < headers.length) continue;
 
       records.push({
         resource: cols[0],            
-        gacc: cols[1].toUpperCase(),      
-        demand: parseFloat(cols[2]),                        
-        shortage: parseFloat(cols[3]),                        
-        supply: parseFloat(cols[4]),                        
+        gacc: cols.length > 1 ? cols[1].toUpperCase() : '',      
+        demand: parseFloat(cols[2]) || 0,                        
+        shortage: parseFloat(cols[3]) || 0,                        
+        supply: parseFloat(cols[4]) || 0                       
       });
     }
     return records;
+  }
+
+  // --- Newly Migrated Calculation Helpers ---
+
+  static calculateNationalResourceFlows(resourceLevels, movementMatrix, resType, selectedGaccPl, selectedNatPl, knownGaccCodes) {
+    let natDrawdown = 0;
+    let natOutsource = 0;
+    let natStaffing = 0;
+    let natLocal = 0;
+    let natExport = 0;
+    let natImport = 0;
+
+    const gaccStats = {};
+    knownGaccCodes.forEach(code => {
+      gaccStats[code] = { local: 0, export: 0, import: 0, staffing: 0 };
+    });
+
+    // 1. Accumulate movement matrix stats
+    movementMatrix.forEach(d => {
+      const itemRes = String(d.res || '').trim().toLowerCase();
+      if (itemRes === resType.toLowerCase()) {
+        const orig = String(d.orig || '').trim().toUpperCase();
+        const dest = String(d.dest || '').trim().toUpperCase();
+        const val = Number(d.val) || 0;
+
+        if (!gaccStats[orig]) gaccStats[orig] = { local: 0, export: 0, import: 0, staffing: 0 };
+        if (!gaccStats[dest]) gaccStats[dest] = { local: 0, export: 0, import: 0, staffing: 0 };
+
+        if (orig === dest) {
+          natLocal += val;
+          gaccStats[orig].local += val;
+        } else {
+          natExport += val;
+          natImport += val;
+          gaccStats[orig].export += val;
+          gaccStats[dest].import += val;
+        }
+      }
+    });
+
+    // 2. Accumulate regional resource levels/staffing
+    Object.keys(gaccStats).forEach(gaccCode => {
+      const match = resourceLevels.find(r => {
+        const reg = String(r.region || r.gacc || '').trim().toUpperCase();
+        const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
+        const natPl = parseInt(r.national_pl || r.natpl || r.nat_pl, 10);
+        const crew = String(r.crewtype || r.resource || '').trim().toLowerCase();
+        
+        let matchesCrew = true;
+        if (resType && crew) {
+          const cleanSelected = resType.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
+          matchesCrew = (cleanSelected === cleanCrew);
+        }
+
+        return reg === gaccCode && gaccPl === selectedGaccPl && natPl === selectedNatPl && matchesCrew;
+      });
+
+      const staffVal = match ? Number(match.staffing || 0) : 0;
+      const drawVal = match ? Number(match.drawndown || match.drawdown || 0) : 0;
+      const outVal = match ? Number(match.outsource || match.outsourced || 0) : 0;
+
+      gaccStats[gaccCode].staffing = staffVal;
+      natStaffing += staffVal;
+      natDrawdown += drawVal;
+      natOutsource += outVal;
+    });
+
+    return { natDrawdown, natOutsource, natStaffing, natLocal, natExport, natImport, gaccStats };
+  }
+
+  static computeRankings(gaccStats, getter) {
+    const list = Object.keys(gaccStats).map(gacc => ({
+      gacc,
+      val: Math.round(getter(gaccStats[gacc]))
+    })).sort((a, b) => b.val - a.val);
+
+    const result = {};
+    const total = list.reduce((sum, item) => sum + item.val, 0);
+
+    let currentRank = 1;
+    list.forEach((item, index) => {
+      if (index > 0 && item.val < list[index - 1].val) {
+        currentRank = index + 1;
+      }
+      result[item.gacc] = {
+        val: item.val,
+        rank: currentRank,
+        pct: total > 0 ? ((item.val / total) * 100).toFixed(1) + '%' : '0.0%'
+      };
+    });
+    return result;
+  }
+
+  static processDemandAggregates(demandRecords, resType, targetGacc = null) {
+    const supplyObj = {};
+    const shortageObj = {};
+    let totalDemand = 0;
+    let totalSupply = 0;
+    let totalShortage = 0;
+
+    const normalizedResType = resType.toLowerCase().replace(/[\s_]+/g, ' ');
+
+    demandRecords.forEach(d => {
+      const itemRes = String(d.resource || '').trim().toLowerCase(); 
+      const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
+
+      if (normalizedItemRes === normalizedResType) {
+        const gacc = String(d.gacc || '').trim().toUpperCase();
+        
+        if (!targetGacc || gacc === targetGacc) {
+          const demand = Number(d.demand) || 0;
+          const unmet = Number(d.shortage) || 0;
+          const supplied = Number(d.supply) || Math.max(0, demand - unmet);
+
+          supplyObj[gacc] = (supplyObj[gacc] || 0) + Math.round(supplied);
+          shortageObj[gacc] = (shortageObj[gacc] || 0) + Math.round(unmet);
+
+          totalDemand += demand;
+          totalSupply += supplied;
+          totalShortage += unmet;
+        }
+      }
+    });
+
+    return { supplyObj, shortageObj, totalDemand, totalSupply, totalShortage };
   }
 }

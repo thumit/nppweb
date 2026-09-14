@@ -6,19 +6,17 @@ class App {
   constructor() {
     this.movementMatrix = [];
     this.resourceLevels = [];
-    this.demandRecords = []; // Track demand data records
+    this.demandRecords = []; 
     this.selectedGaccPl = 5;
     this.selectedNatPl = 5;
-    
-    // Track totals for Workload calculation: (Local Use + Exportation) / Staffing
+     
     this.currentLocalUse = 0;
     this.currentExportation = 0;
     this.currentStaffing = 0;
-    
+     
     this.map = new Map3D('canvas-container', 'labels-container');
     this.flowOverlay = null;
 
-    // Available scenario plan folders inside data/
     this.availablePlans = [
       { name: 'Plan A', enabled: true },
       { name: 'Plan B', enabled: true },
@@ -37,7 +35,7 @@ class App {
         this.map.gaccCentroids
       );
 
-      this.populateGACCDropdown(); // Ensure GACC dropdown is populated from map features
+      this.populateGACCDropdown(); 
       this.populatePlanDropdown();
       this.loadScenarioPlan(this.currentPlan);
     });
@@ -72,18 +70,14 @@ class App {
     const gaccSelect = document.getElementById('gaccSelect');
     if (!gaccSelect) return;
 
-    // Get unique GACC abbreviations from centroids or map group
     const gaccKeys = Object.keys(this.map.gaccCentroids || {}).sort();
-
     gaccSelect.innerHTML = '';
 
-    // Always append "ALL" option first
     const allOption = document.createElement('option');
     allOption.value = 'ALL';
     allOption.innerText = 'National Overview: All GACCs';
     gaccSelect.appendChild(allOption);
 
-    // Append individual GACCs loaded from map data
     gaccKeys.forEach(code => {
       const option = document.createElement('option');
       option.value = code;
@@ -104,7 +98,7 @@ class App {
       option.value = planObj.name;
       option.innerText = planObj.enabled ? planObj.name : `${planObj.name} (No Data)`;
       option.disabled = !planObj.enabled;
-      
+       
       if (planObj.name === this.currentPlan) {
         option.selected = true;
       }
@@ -116,13 +110,11 @@ class App {
     this.currentPlan = planFolder;
     const folderPath = `data/${planFolder}`;
 
-    // 1. Load Resource Levels FIRST
     DataParser.loadResourceLevelCSV(
       `${folderPath}/resourcelevel.csv`, 
       (resData) => {
         this.resourceLevels = resData;
-        
-        // 2. Load Demand CSV NEXT (fallback to empty array if fails or method differs)
+         
         const loadDemand = DataParser.loadDemandCSVFile || DataParser.loadDefaultCSVFile;
         loadDemand(
           `${folderPath}/demand.csv`, 
@@ -140,7 +132,6 @@ class App {
   }
 
   proceedWithMatrixLoad(folderPath) {
-    // 3. Load the Matrix LAST, ensuring resourceLevels and demandRecords are ready
     DataParser.loadDefaultCSVFile(
       `${folderPath}/gacc_matrix.csv`, 
       (data) => {
@@ -168,7 +159,7 @@ class App {
     if (!resSelect) return;
 
     const uniqueResources = [...new Set(this.movementMatrix.map(item => String(item.res).trim()))].filter(Boolean);
-    
+     
     resSelect.innerHTML = '';
     uniqueResources.forEach(res => {
       const option = document.createElement('option');
@@ -200,29 +191,26 @@ class App {
       panel.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    // Hover-focus event listeners for national GACC HUD cards ensuring proper layer stacking
     const labelsContainer = document.getElementById('labels-container');
     if (labelsContainer) {
       labelsContainer.addEventListener('mouseover', (e) => {
         const card = e.target.closest('.gacc-national-hud');
         if (card && card.parentElement === labelsContainer) {
-          // Remove hover and reset z-index from any other cards first to prevent stale states
           labelsContainer.querySelectorAll('.gacc-national-hud').forEach(c => {
             c.classList.remove('is-hovered');
             c.style.zIndex = '';
           });
           card.classList.add('is-hovered');
-          card.style.zIndex = '1000'; // Dynamically bring the active card to the front
+          card.style.zIndex = '1000'; 
         }
       });
 
       labelsContainer.addEventListener('mouseout', (e) => {
         const card = e.target.closest('.gacc-national-hud');
         if (card && card.parentElement === labelsContainer) {
-          // Only clear if we are actually leaving the card entirely
           if (!card.contains(e.relatedTarget)) {
             card.classList.remove('is-hovered');
-            card.style.zIndex = ''; // Reset z-index
+            card.style.zIndex = ''; 
           }
         }
       });
@@ -248,7 +236,6 @@ class App {
           this.updateFlows();
         });
       } else {
-        // Deselect single GACC and revert dropdown back to ALL
         const gaccSelect = document.getElementById('gaccSelect');
         if (gaccSelect) gaccSelect.value = 'ALL';
 
@@ -293,7 +280,7 @@ class App {
       gaccRow.addEventListener('click', (e) => {
         const btn = e.target.closest('.pl-btn') || e.target.closest('button');
         if (!btn) return;
-        
+         
         const plVal = btn.dataset.pl || btn.dataset.level || btn.innerText.trim();
         const parsedPl = parseInt(plVal, 10);
 
@@ -341,39 +328,17 @@ class App {
     if (!this.resourceLevels || this.resourceLevels.length === 0 || !focusGACC) return;
 
     if (focusGACC === 'ALL') {
-      let natDrawdown = 0;
-      let natOutsource = 0;
-      let natStaffing = 0;
+      const knownGaccCodes = Object.keys(this.map.gaccCentroids || {});
+      const calc = DataParser.calculateNationalResourceFlows(
+        this.resourceLevels,
+        this.movementMatrix,
+        selectedRes,
+        this.selectedGaccPl,
+        this.selectedNatPl,
+        knownGaccCodes
+      );
 
-      const matches = this.resourceLevels.filter(r => {
-        const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
-        const natPl = parseInt(r.national_pl || r.natpl || r.nat_pl, 10);
-
-        const matchesGacc = gaccPl === this.selectedGaccPl;
-        const matchesNat = natPl === this.selectedNatPl;
-
-        const crew = String(r.crewtype || r.resource || '').trim().toLowerCase();
-        let matchesCrew = true;
-        if (selectedRes && crew) {
-          const cleanSelected = selectedRes.replace(/[^a-z0-9]/g, '');
-          const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
-          matchesCrew = (cleanSelected === cleanCrew);
-        }
-
-        return matchesGacc && matchesNat && matchesCrew;
-      });
-
-      matches.forEach(r => {
-        const draw = Number(r.drawndown || r.drawdown || 0);
-        const out = Number(r.outsource || r.outsourced || 0);
-        const staff = Number(r.staffing || (draw + out));
-
-        natDrawdown += draw;
-        natOutsource += out;
-        natStaffing += staff;
-      });
-
-      this.currentStaffing = natStaffing;
+      this.currentStaffing = calc.natStaffing;
 
       const staffingElem = document.getElementById('sankeyStaffingVal');
       const drawdownElem = document.getElementById('sankeyDrawdownVal');
@@ -381,20 +346,20 @@ class App {
       const barDrawdownFill = document.getElementById('barDrawdownFill');
       const barOutsourceFill = document.getElementById('barOutsourceFill');
 
-      if (staffingElem) staffingElem.innerText = Math.round(natStaffing).toLocaleString();
-      if (drawdownElem) drawdownElem.innerText = Math.round(natDrawdown).toLocaleString();
-      if (outsourceElem) outsourceElem.innerText = Math.round(natOutsource).toLocaleString();
+      if (staffingElem) staffingElem.innerText = Math.round(calc.natStaffing).toLocaleString();
+      if (drawdownElem) drawdownElem.innerText = Math.round(calc.natDrawdown).toLocaleString();
+      if (outsourceElem) outsourceElem.innerText = Math.round(calc.natOutsource).toLocaleString();
 
-      const drawPct = natStaffing > 0 ? (natDrawdown / natStaffing) * 100 : 0;
-      const outPct = natStaffing > 0 ? (natOutsource / natStaffing) * 100 : 0;
+      const drawPct = calc.natStaffing > 0 ? (calc.natDrawdown / calc.natStaffing) * 100 : 0;
+      const outPct = calc.natStaffing > 0 ? (calc.natOutsource / calc.natStaffing) * 100 : 0;
 
       if (barDrawdownFill) barDrawdownFill.style.width = `${drawPct}%`;
       if (barOutsourceFill) barOutsourceFill.style.width = `${outPct}%`;
 
       const workloadElem = document.getElementById('workloadVal');
       if (workloadElem) {
-        if (natStaffing > 0) {
-          const workload = Math.round((this.currentLocalUse + this.currentExportation) / natStaffing);
+        if (calc.natStaffing > 0) {
+          const workload = Math.round((this.currentLocalUse + this.currentExportation) / calc.natStaffing);
           workloadElem.innerHTML = `${workload} <span style="font-size: 0.65rem; font-weight: normal; color: #94a3b8;">days/year</span>`;
         } else {
           workloadElem.innerHTML = `N/A`;
@@ -403,7 +368,6 @@ class App {
       return;
     }
 
-    // Standard single GACC logic
     const regionRows = this.resourceLevels.filter(r => {
       const reg = String(r.region || r.gacc || '').trim().toUpperCase();
       return reg === focusGACC;
@@ -414,7 +378,6 @@ class App {
     let matchedRecord = regionRows.find(r => {
       const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
       const natPl = parseInt(r.national_pl || r.natpl || r.nat_pl, 10);
-
       const matchesGacc = gaccPl === this.selectedGaccPl;
       const matchesNat = natPl === this.selectedNatPl;
 
@@ -487,146 +450,52 @@ class App {
     if (!resType || !focusGACC) return;
 
     if (focusGACC === 'ALL') {
-      let natLocal = 0, natExport = 0, natImport = 0;
-      const gaccStats = {};
-
-      // Initialize all known GACCs from centroids map so every centroid gets a card
       const knownGaccCodes = Object.keys(this.map.gaccCentroids || {});
-      knownGaccCodes.forEach(code => {
-        gaccStats[code] = { local: 0, export: 0, import: 0, staffing: 0 };
-      });
+      const calc = DataParser.calculateNationalResourceFlows(
+        this.resourceLevels,
+        this.movementMatrix,
+        resType,
+        this.selectedGaccPl,
+        this.selectedNatPl,
+        knownGaccCodes
+      );
 
-      this.movementMatrix.forEach(d => {
-        const itemRes = String(d.res || '').trim().toLowerCase();
-        if (itemRes === resType) {
-          const orig = String(d.orig || '').trim().toUpperCase();
-          const dest = String(d.dest || '').trim().toUpperCase();
-          const val = Number(d.val) || 0;
-
-          if (!gaccStats[orig]) gaccStats[orig] = { local: 0, export: 0, import: 0, staffing: 0 };
-          if (!gaccStats[dest]) gaccStats[dest] = { local: 0, export: 0, import: 0, staffing: 0 };
-
-          if (orig === dest) {
-            natLocal += val;
-            gaccStats[orig].local += val;
-          } else {
-            natExport += val;
-            natImport += val;
-            gaccStats[orig].export += val;
-            gaccStats[dest].import += val;
-          }
-        }
-      });
-
-      let natStaffing = 0;
-      Object.keys(gaccStats).forEach(gaccCode => {
-        const match = this.resourceLevels.find(r => {
-          const reg = String(r.region || r.gacc || '').trim().toUpperCase();
-          const gaccPl = parseInt(r.gacc_pl || r.gaccpl, 10);
-          const natPl = parseInt(r.national_pl || r.natpl || r.nat_pl, 10);
-
-          const crew = String(r.crewtype || r.resource || '').trim().toLowerCase();
-          let matchesCrew = true;
-          if (resType && crew) {
-            const cleanSelected = resType.replace(/[^a-z0-9]/g, '');
-            const cleanCrew = crew.replace(/[^a-z0-9]/g, '');
-            matchesCrew = (cleanSelected === cleanCrew);
-          }
-
-          return reg === gaccCode && gaccPl === this.selectedGaccPl && natPl === this.selectedNatPl && matchesCrew;
-        });
-
-        const staffVal = match ? Number(match.staffing || 0) : 0;
-        gaccStats[gaccCode].staffing = staffVal;
-        natStaffing += staffVal;
-      });
-
-      this.currentLocalUse = natLocal;
-      this.currentExportation = natExport;
+      this.currentLocalUse = calc.natLocal;
+      this.currentExportation = calc.natExport;
 
       const kpiLocalUse = document.getElementById('kpiLocalUse');
       const kpiExportation = document.getElementById('kpiExportation');
       const kpiImportation = document.getElementById('kpiImportation');
 
-      if (kpiLocalUse) kpiLocalUse.innerText = Math.round(natLocal).toLocaleString();
-      if (kpiExportation) kpiExportation.innerText = Math.round(natExport).toLocaleString();
-      if (kpiImportation) kpiImportation.innerText = Math.round(natImport).toLocaleString();
+      if (kpiLocalUse) kpiLocalUse.innerText = Math.round(calc.natLocal).toLocaleString();
+      if (kpiExportation) kpiExportation.innerText = Math.round(calc.natExport).toLocaleString();
+      if (kpiImportation) kpiImportation.innerText = Math.round(calc.natImport).toLocaleString();
 
       this.updateResourceFlowStream();
 
-      // Compute ranks across all GACCs (Rounded integers directly at source)
-      const computeRankings = (getter) => {
-        const list = Object.keys(gaccStats).map(gacc => ({
-          gacc,
-          val: Math.round(getter(gaccStats[gacc]))
-        })).sort((a, b) => b.val - a.val);
+      const demandAgg = DataParser.processDemandAggregates(this.demandRecords, resType);
 
-        const result = {};
-        const total = list.reduce((sum, item) => sum + item.val, 0);
-
-        let currentRank = 1;
-        list.forEach((item, index) => {
-          if (index > 0 && item.val < list[index - 1].val) {
-            currentRank = index + 1;
-          }
-          result[item.gacc] = {
-            val: item.val,
-            rank: currentRank,
-            pct: total > 0 ? ((item.val / total) * 100).toFixed(1) + '%' : '0.0%'
-          };
-        });
-        return result;
-      };
-
-      // Aggregate Supply and Shortage as rounded integers
-      const supplyObj = {};
-      const shortageObj = {};
-      let totalNationalDemand = 0;
-      let totalNationalSupply = 0;
-      let totalNationalShortage = 0;
-
-      this.demandRecords.forEach(d => {
-        const itemRes = String(d.resource || '').trim().toLowerCase(); 
-        const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
-        const normalizedResType = resType.replace(/[\s_]+/g, ' ');
-
-        if (normalizedItemRes === normalizedResType) {
-          const gacc = String(d.gacc || '').trim().toUpperCase();
-          const demand = Number(d.demand) || 0;
-          const unmet = Number(d.shortage) || 0;
-          const supplied = Number(d.supply) || Math.max(0, demand - unmet);
-
-          supplyObj[gacc] = (supplyObj[gacc] || 0) + Math.round(supplied);
-          shortageObj[gacc] = (shortageObj[gacc] || 0) + Math.round(unmet);
-
-          totalNationalDemand += demand;
-          totalNationalSupply += supplied;
-          totalNationalShortage += unmet;
-        }
-      });
-
-      // Update Demand, Supply, Shortage right panel KPIs for National Overview
       const kpiDemand = document.getElementById('kpiDemand');
       const kpiSupply = document.getElementById('kpiSupply');
       const kpiShortage = document.getElementById('kpiShortage');
 
-      if (kpiDemand) kpiDemand.innerText = Math.round(totalNationalDemand).toLocaleString();
-      if (kpiSupply) kpiSupply.innerText = Math.round(totalNationalSupply).toLocaleString();
-      if (kpiShortage) kpiShortage.innerText = Math.round(totalNationalShortage).toLocaleString();
+      if (kpiDemand) kpiDemand.innerText = Math.round(demandAgg.totalDemand).toLocaleString();
+      if (kpiSupply) kpiSupply.innerText = Math.round(demandAgg.totalSupply).toLocaleString();
+      if (kpiShortage) kpiShortage.innerText = Math.round(demandAgg.totalShortage).toLocaleString();
 
-      const staffingRank = computeRankings(s => s.staffing);
-      const localRank = computeRankings(s => s.local);
-      const exportRank = computeRankings(s => s.export);
-      const importRank = computeRankings(s => s.import);
+      const staffingRank = DataParser.computeRankings(calc.gaccStats, s => s.staffing);
+      const localRank = DataParser.computeRankings(calc.gaccStats, s => s.local);
+      const exportRank = DataParser.computeRankings(calc.gaccStats, s => s.export);
+      const importRank = DataParser.computeRankings(calc.gaccStats, s => s.import);
 
-      const workloadList = Object.keys(gaccStats).map(gacc => {
-        const staff = gaccStats[gacc].staffing;
-        const totalDemand = gaccStats[gacc].local + gaccStats[gacc].export;
+      const workloadList = Object.keys(calc.gaccStats).map(gacc => {
+        const staff = calc.gaccStats[gacc].staffing;
+        const totalDemand = calc.gaccStats[gacc].local + calc.gaccStats[gacc].export;
         const wl = staff > 0 ? totalDemand / staff : 0;
         return { gacc, val: Math.round(wl) };
       }).sort((a, b) => b.val - a.val);
 
-      const nationalAvgWorkload = natStaffing > 0 ? (natLocal + natExport) / natStaffing : 0;
+      const nationalAvgWorkload = calc.natStaffing > 0 ? (calc.natLocal + calc.natExport) / calc.natStaffing : 0;
       const workloadRank = {};
       workloadList.forEach((item, index) => {
         const ratioToAvg = nationalAvgWorkload > 0 ? ((item.val / nationalAvgWorkload) * 100).toFixed(0) + '%' : '0%';
@@ -637,12 +506,10 @@ class App {
         };
       });
 
-      // Clear any existing 3D flow lines when National Overview (ALL) is selected
       if (this.flowOverlay) {
         this.flowOverlay.clear();
       }
 
-      // Display summary cards / HUDs over every GACC centroid
       if (typeof this.map.renderNationalCentroidHUDs === 'function') {
         this.map.renderNationalCentroidHUDs({
           staffing: staffingRank,
@@ -650,8 +517,8 @@ class App {
           localUse: localRank,
           exportation: exportRank,
           importation: importRank,
-          supply: supplyObj,
-          shortage: shortageObj
+          supply: demandAgg.supplyObj,
+          shortage: demandAgg.shortageObj
         }, rawRes);
       }
 
@@ -697,32 +564,15 @@ class App {
     if (kpiExportation) kpiExportation.innerText = Math.round(exportation).toLocaleString();
     if (kpiImportation) kpiImportation.innerText = Math.round(importation).toLocaleString();
 
-    // Extract Demand, Supply, Shortage for the specific selected GACC
-    let singleDemand = 0, singleSupply = 0, singleShortage = 0;
-    this.demandRecords.forEach(d => {
-      const itemRes = String(d.resource || '').trim().toLowerCase();
-      const normalizedItemRes = itemRes.replace(/[\s_]+/g, ' ');
-      const normalizedResType = resType.replace(/[\s_]+/g, ' ');
-      const gacc = String(d.gacc || '').trim().toUpperCase();
-
-      if (normalizedItemRes === normalizedResType && gacc === focusGACC) {
-        const demand = Number(d.demand) || 0;
-        const unmet = Number(d.shortage) || 0;
-        const supplied = Number(d.supply) || Math.max(0, demand - unmet);
-
-        singleDemand += demand;
-        singleSupply += supplied;
-        singleShortage += unmet;
-      }
-    });
+    const demandAggSingle = DataParser.processDemandAggregates(this.demandRecords, resType, focusGACC);
 
     const kpiDemand = document.getElementById('kpiDemand');
     const kpiSupply = document.getElementById('kpiSupply');
     const kpiShortage = document.getElementById('kpiShortage');
 
-    if (kpiDemand) kpiDemand.innerText = Math.round(singleDemand).toLocaleString();
-    if (kpiSupply) kpiSupply.innerText = Math.round(singleSupply).toLocaleString();
-    if (kpiShortage) kpiShortage.innerText = Math.round(singleShortage).toLocaleString();
+    if (kpiDemand) kpiDemand.innerText = Math.round(demandAggSingle.totalDemand).toLocaleString();
+    if (kpiSupply) kpiSupply.innerText = Math.round(demandAggSingle.totalSupply).toLocaleString();
+    if (kpiShortage) kpiShortage.innerText = Math.round(demandAggSingle.totalShortage).toLocaleString();
 
     this.updateResourceFlowStream();
   }
