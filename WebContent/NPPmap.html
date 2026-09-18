@@ -12,14 +12,56 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+
+  <style>
+    /* Side-by-side layout for Scenario dropdown and Read Plan button */
+    .scenario-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .scenario-row .form-control {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .plan-pdf-inline-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 38px; /* Matches exact height of form-control */
+      padding: 0 12px;
+      background-color: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #facc15;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 11px;
+      border-radius: 4px;
+      white-space: nowrap;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .plan-pdf-inline-btn:hover {
+      background-color: rgba(30, 41, 59, 0.9);
+      border-color: #38bdf8;
+      color: #ffffff;
+    }
+  </style>
 </head>
 <body>
 
   <!-- Top Navigation Bar -->
   <header class="top-navbar">
     <div class="nav-brand">NATIONAL PREPAREDNESS PLAN DEVELOPMENT (BETA)</div>
+    
+    <!-- Top-Center Plan Overview Toggle Button -->
+    <div class="nav-center-toggle">
+      <button class="nav-tab active" id="tabMap">Plan Overview</button>
+    </div>
+
     <nav class="nav-tabs">
-      <button class="nav-tab active" id="tabMap">Plan Details</button>
       <button class="nav-tab" id="tabAbout">👥 About Us</button>
     </nav>
   </header>
@@ -39,9 +81,14 @@
     <div class="panel-content">
       <div class="form-group">
         <label for="planSelect">Scenario</label>
-        <select class="form-control" id="planSelect">
-          <!-- Populated by JS -->
-        </select>
+        <div class="scenario-row">
+          <select class="form-control" id="planSelect">
+            <!-- Populated by JS -->
+          </select>
+          <a href="#" id="planPdfLink" target="_blank" class="plan-pdf-inline-btn" title="Open Full PDF Description">
+            <span>📄 Read Plan</span>
+          </a>
+        </div>
       </div>
 
       <div class="form-group">

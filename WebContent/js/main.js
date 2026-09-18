@@ -18,10 +18,15 @@ class App {
     this.flowOverlay = null;
 
     this.availablePlans = [
-      { name: 'Plan A', enabled: true },
-      { name: 'Plan B', enabled: true },
-      { name: 'Plan C', enabled: false },
-      { name: 'Plan D', enabled: false }
+      { name: '2020-2025', enabled: true },
+      { name: '2020', enabled: true },
+      { name: '2021', enabled: true },
+      { name: '2022', enabled: true },
+      { name: '2023', enabled: true },
+      { name: '2024', enabled: true },
+      { name: '2025', enabled: true },
+      { name: 'Model 1', enabled: true },
+      { name: 'Model 2', enabled: true }
     ];
     this.currentPlan = 'Plan A';
 
@@ -109,6 +114,20 @@ class App {
   loadScenarioPlan(planFolder) {
     this.currentPlan = planFolder;
     const folderPath = `data/${planFolder}`;
+
+    // Target the correct ID 'planPdfLink' from your HTML
+    const pdfBtn = document.getElementById('planPdfLink') || 
+                   document.getElementById('planPdfBtn') || 
+                   document.querySelector('.plan-pdf-link');
+    
+    if (pdfBtn) {
+      pdfBtn.onclick = (e) => {
+        e.preventDefault();
+        const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        const pdfUrl = `${baseUrl}${folderPath}/description.pdf`;
+        window.open(pdfUrl, '_blank');
+      };
+    }
 
     DataParser.loadResourceLevelCSV(
       `${folderPath}/resourcelevel.csv`, 

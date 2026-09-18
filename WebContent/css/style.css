@@ -25,6 +25,35 @@ body {
   z-index: 10;
 }
 
+/* --- Plan Overview Card (Integrated into Right GIS Panel) --- */
+.plan-info-card {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.plan-pdf-link {
+  font-size: 10px;
+  font-weight: 600;
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.plan-pdf-link:hover {
+  background: rgba(250, 204, 21, 0.25);
+  color: #ffffff;
+}
+
 /* --- Top Navigation Bar --- */
 .top-navbar {
   position: fixed;
