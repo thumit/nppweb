@@ -28,7 +28,7 @@ class App {
       { name: 'Model 1', enabled: true },
       { name: 'Model 2', enabled: true }
     ];
-    this.currentPlan = 'Plan A';
+    this.currentPlan = '2020-2025';
 
     this.initEventListeners();
     this.initNavigation();
@@ -164,11 +164,31 @@ class App {
   onDataLoaded(data) {
     if (data && data.length > 0) {
       this.movementMatrix = data;
-      this.populateResourceDropdown();
+      
+      // 1. Remember what resource was selected *before* clearing the dropdown
       const resSelect = document.getElementById('resSelect');
+      const previousSelectedRes = resSelect ? resSelect.value : null;
+
+      // 2. Rebuild the dropdown with the new plan's data
+      this.populateResourceDropdown();
+
+      // 3. Restore the previous selection if it exists in the new plan, otherwise default to 0
       if (resSelect && resSelect.options.length > 0) {
-        resSelect.selectedIndex = 0;
+        let foundMatch = false;
+        if (previousSelectedRes) {
+          for (let i = 0; i < resSelect.options.length; i++) {
+            if (resSelect.options[i].value === previousSelectedRes) {
+              resSelect.selectedIndex = i;
+              foundMatch = true;
+              break;
+            }
+          }
+        }
+        if (!foundMatch) {
+          resSelect.selectedIndex = 0;
+        }
       }
+
       this.updateFlows();
     }
   }
